@@ -34,15 +34,14 @@ The app is a free-form workbench, not a wizard.
 
 Navigation order:
 
-1. 自进化实验
-2. 当前 skill
-3. 评测集
-4. 运行评测
+1. 当前 skill
+2. 评测集
+3. 运行评测
+4. 自进化实验
 
 The top bar shows:
 
 - 当前 skill 状态
-- 当前评测集选择
 - 当前模型选择
 - 当前任务状态
 
@@ -51,10 +50,16 @@ The UI language is Chinese. The product keeps the term `skill` instead of transl
 - 当前 skill
 - SKILL.md 编辑器
 - 评测集
+- 评测器
 - 静态评审
 - 触发评测
 - 效果评测
 - 自进化实验
+- 进化策略
+- 进化算法
+- 生成模式
+- 进化方向
+- 进化环境
 - 候选版本
 - 评测证据
 - Token 用量
@@ -94,56 +99,57 @@ Frontmatter behavior:
 
 ## Eval Sets
 
-Eval sets are independent reusable objects.
+Eval sets are independent reusable objects. They are typed because different
+evaluation questions need different data shapes.
 
-An eval set has:
+Eval set types:
+
+- 可触发性评测集
+- 单 skill 预期执行效果评测集
+- agent 实际执行效果评测集
+
+All eval sets have:
 
 - Name
 - Description
-- Routing cases
-- Execution cases
-
-The MVP does not add categories, tags, target capability declarations, ownership, or applicability metadata.
+- Type
+- Cases matching that type
 
 Eval set behavior:
 
 - Multiple eval sets are supported.
 - Eval sets auto-save to S3.
 - Eval set creation and editing are always available, even when no current skill exists.
-- Top-level deletion is not supported in the MVP.
+- Top-level deletion is supported.
 - Cases inside an eval set can be added, edited, and removed.
-- AI-suggested cases are available as an assistive feature, but manual creation remains the primary workflow.
+- AI case generation is scoped to the current eval set.
+- Generated cases are directly written into the current eval set. There is no manual "apply suggestions" step.
 
 ## Eval Case Forms
 
-Eval case forms are progressive.
+Eval case forms depend on eval set type.
 
-Routing case default fields:
-
-- Case name
-- Prompt
-- Expected selected skill
-
-Routing case advanced fields:
-
-- Candidate skill pool override
-- Expected `none`
-- Routing rationale
-- Confusing skills to include
-- Notes
-
-Execution case default fields:
+可触发性评测数据 fields:
 
 - Case name
-- Task input
-- Expected behavior
+- User input
+- Memory and conversation context
+- Other skill list, each with name and description
+- Expected selected skill or `none`
 
-Execution case advanced fields:
+单 skill 预期执行效果评测数据 fields:
 
-- Rubric checklist
-- Forbidden behavior
-- Optional context
-- Evaluation notes
+- Case name
+- User input
+- Memory and conversation context
+- Expected execution result
+
+agent 实际执行效果评测数据 fields:
+
+- Case name
+- User input
+- Memory and conversation context
+- Expected execution result
 
 ## Evaluation Types
 
@@ -157,25 +163,17 @@ It evaluates:
 
 - Frontmatter validity
 - `name` and `description`
-- Trigger clarity
-- Scope and non-scope clarity
+- `description` length as a proxy for trigger clarity
+- Presence of non-scope or forbidden-use guidance
 - Workflow clarity
-- Safety and confirmation requirements
-- Internal contradictions
-- Testability
-- Evolution friendliness
 - External reference detection
 
 ### Eval-Set-Aware Static Review
 
-Eval-Set-Aware Static Review depends on `SKILL.md + eval set`.
-
-It evaluates:
-
-- Whether the skill appears suitable for the eval set
-- Whether the description supports routing cases
-- Whether the skill body supports execution cases
-- Whether likely failures can be traced to static instruction gaps
+Eval-Set-Aware Static Review existed in the early design but is not exposed as a
+separate current UI choice. The running product keeps the evaluation surface to
+static quality, trigger evaluation, single-skill expected execution evaluation,
+and disabled agent execution evaluation.
 
 ### Simulated Routing Eval
 
@@ -218,19 +216,20 @@ The MVP does not simulate a real tool-using agent and does not execute scripts o
 
 Evaluation runs are user-triggered.
 
-The user can choose which evaluation scopes to run:
+The user chooses each evaluator independently:
 
-- General Static Review
-- Eval-Set-Aware Static Review
-- Routing Evals
-- Execution Evals
+- Static quality check
+- Trigger evaluation + one 可触发性评测集
+- Single skill expected execution evaluation + one 单 skill 预期执行效果评测集
+- Agent actual execution evaluation + one agent 实际执行效果评测集
 
 Scope availability rules:
 
-- General Static Review requires current skill.
-- Eval-Set-Aware Static Review requires current skill and selected eval set.
-- Routing Evals require routing cases.
-- Execution Evals require execution cases.
+- Static quality check requires current skill.
+- Trigger evaluation requires a trigger eval set.
+- Single skill execution evaluation requires a single-skill execution eval set.
+- Agent actual execution evaluation is visible but disabled until a real agent runner exists.
+- Each checked evaluator chooses its own eval set. There is no top-level global eval set selector for a run.
 
 Evaluation report presentation uses Summary + Drilldown.
 
@@ -291,15 +290,36 @@ Evolution strategies consume this evidence, not the score.
 An experiment uses:
 
 - Current skill snapshot
-- Selected eval set snapshot
+- Selected evaluator plan
+- Selected eval set snapshots for each evaluator
 - Selected model
-- Strategy
-- Strategy configuration
+- Evolution algorithm
+- Generation mode
+- Strategy configuration, such as rounds and candidates per round
 - Optimization preference
-- Optional natural-language goal
+- Optional evolution direction
+- Optional evolution environment reference files
 - Optional constraints
 
-Self-evolution always runs all available evaluation scopes. The user cannot narrow the evaluation scope inside Evolution.
+Self-evolution uses the same evaluator selection model as evaluation runs. The
+user chooses which evaluators provide evidence for the experiment.
+
+The evaluator module in 自进化实验 includes:
+
+- Static quality check
+- Trigger evaluation + one trigger eval set
+- Single skill expected execution evaluation + one single-skill execution eval set
+- Agent actual execution evaluation, visible but disabled until a real agent runner exists
+
+Each evolution candidate is evaluated with the selected evaluator plan. The
+evolution algorithm consumes structured evidence, not numeric score.
+
+进化方向 is a free-form natural-language goal. It describes what the user wants
+this experiment to improve or preserve.
+
+进化环境 is an optional list of user-uploaded reference files. It defaults to
+empty. Uploaded files are saved with the experiment snapshot and included as
+reference context when generating candidate `SKILL.md` files.
 
 All candidates are read-only.
 
@@ -318,6 +338,52 @@ The user cannot:
 - Save a candidate as a managed skill version
 
 ## Evolution Strategies
+
+Evolution strategy is split into two independent concepts:
+
+- 进化算法: how candidate text should change
+- 生成模式: how candidate lineage expands across rounds
+
+### Evolution Algorithms
+
+#### LLM 自优化
+
+LLM 自优化 directly rewrites `SKILL.md` from structured evaluation evidence.
+It is the simplest baseline and prioritizes critical/major findings and failed
+cases.
+
+#### 遗传算法
+
+遗传算法 treats `SKILL.md` as text genes: `name`, `description`, trigger
+boundaries, non-scope rules, workflow steps, safety constraints, and reference
+instructions. It preserves strong fragments, recombines useful fragments, and
+mutates weak regions related to failed evidence.
+
+#### 粒子群
+
+粒子群 treats each candidate as a particle. A candidate moves toward its own
+best-known text changes and the global best direction suggested by evaluation
+evidence. It favors gradual convergence over large rewrites.
+
+#### 蚁群优化
+
+蚁群优化 treats effective fragments as pheromone paths. Passing trigger
+descriptions, execution steps, and safety boundaries are reinforced; failed or
+misleading fragments decay. Later candidates prefer high-pheromone paths.
+
+#### 免疫克隆选择
+
+免疫克隆选择 treats failed cases, false triggers, and safety gaps as antigens.
+Candidates that resist these issues are cloned and locally mutated, producing
+stable "memory" fragments for critical boundaries.
+
+#### 模拟退火
+
+模拟退火 allows broader exploration in early high-temperature rounds, then
+reduces rewrite magnitude as temperature cools. Later rounds should focus on
+precise fixes and boundary reinforcement rather than major restructuring.
+
+### Generation Modes
 
 ### Direct Improve
 
@@ -354,12 +420,6 @@ Selector criteria include:
 - Safety constraints preserved
 - User optimization preference followed
 
-### Bio-inspired Search
-
-Bio-inspired Search is shown in the UI as disabled / coming soon.
-
-It is not implemented in the MVP.
-
 ## Evolution Preferences And Constraints
 
 Optimization preferences:
@@ -371,7 +431,7 @@ Optimization preferences:
 - Execution Focus
 - Safety Focus
 
-The user can also provide an optional natural-language goal.
+The user can also provide an optional evolution direction.
 
 Constraints:
 
@@ -475,6 +535,9 @@ runs/<run-id>/eval-set-snapshot.json
 runs/<run-id>/result.json
 experiments/<experiment-id>/input-skill.md
 experiments/<experiment-id>/eval-set-snapshot.json
+experiments/<experiment-id>/eval-set-snapshots.json
+experiments/<experiment-id>/environment-files.json
+experiments/<experiment-id>/environment/<environment-file-id>-<file-name>
 experiments/<experiment-id>/config.json
 experiments/<experiment-id>/candidates/<candidate-id>.md
 experiments/<experiment-id>/result.json
@@ -578,7 +641,6 @@ The MVP does not include:
 - Rerun
 - Task cancellation
 - Streaming output
-- Real bio-inspired algorithm implementation
 - Full prompt visibility
 - Operation logs
 - Audit logs

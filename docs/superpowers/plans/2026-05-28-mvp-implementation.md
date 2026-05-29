@@ -1,5 +1,8 @@
 # Skill Self Evolution MVP Implementation Plan
 
+> Historical implementation plan. The current product source of truth is
+> `docs/product/mvp-design.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the local Vercel Next.js MVP for the `SKILL.md` evaluation and self-evolution workbench.
@@ -87,12 +90,12 @@
 - Create: `src/app/components/*`
 - Modify: `src/app/globals.css`
 
-- [ ] Build the Chinese free-form workbench with navigation order: 自进化实验, 当前 skill, 评测集, 运行评测.
+- [ ] Build the Chinese free-form workbench with navigation order: 当前 skill, 评测集, 运行评测, 自进化实验.
 - [ ] Add workspace password gate, model selector, current eval set selector, and task status.
 - [ ] Implement current skill editor + preview + auto-save + upload/download.
 - [ ] Implement eval set editor with progressive routing/execution case forms and AI suggestion task.
 - [ ] Implement evaluation run controls and Summary + Drilldown report.
-- [ ] Implement evolution configuration, candidate comparison, simple diff, read-only candidates, and `SKILL.md` download.
+- [ ] Implement evolution configuration with evaluator selection, evolution algorithm, generation mode, evolution direction, evolution environment files, candidate comparison, simple diff, read-only candidates, and `SKILL.md` download.
 
 ### Task 7: Verification
 
