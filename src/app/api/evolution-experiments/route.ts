@@ -15,7 +15,7 @@ import type {
   EvolutionEnvironmentFile,
 } from "@/lib/types";
 
-export const maxDuration = 1200;
+export const maxDuration = 300;
 
 export async function GET(request: Request) {
   return withAuth(request, async () => {

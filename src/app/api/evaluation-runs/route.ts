@@ -13,7 +13,7 @@ import { createTask, failTask, updateTask } from "@/lib/server/tasks";
 import { getCurrentSkill } from "@/lib/server/workspace";
 import type { EvaluationPlan, EvaluationScope } from "@/lib/types";
 
-export const maxDuration = 800;
+export const maxDuration = 300;
 
 export async function GET(request: Request) {
   return withAuth(request, async () => {
