@@ -442,9 +442,9 @@ export default function WorkbenchClient() {
       <main className="flex min-h-screen items-center justify-center bg-[#f6f7f5] px-6 text-[#191b1f]">
         <section className="w-full max-w-md rounded-lg border border-[#d7ddd7] bg-white p-8 shadow-sm">
           <p className="text-sm font-semibold text-[#8a3f2c]">Skill Self Evolution</p>
-          <h1 className="mt-3 text-3xl font-semibold">进入工作台</h1>
+          <h1 className="mt-3 text-3xl font-semibold">skill自进化平台</h1>
           <p className="mt-3 text-sm leading-6 text-[#59616b]">
-            输入 workspace password 后继续。这里不是账号系统，只是单租户访问门禁。
+            请输入“访问密钥”，或直接 体验demo
           </p>
           <input
             className="mt-6 w-full rounded-md border border-[#c8d0ca] px-3 py-3"
@@ -452,7 +452,7 @@ export default function WorkbenchClient() {
             onKeyDown={(event) => {
               if (event.key === "Enter") void login();
             }}
-            placeholder="Workspace password"
+            placeholder="访问密钥"
             type="password"
             value={password}
           />
@@ -464,7 +464,7 @@ export default function WorkbenchClient() {
             className="mt-3 block rounded-md border border-[#28715f] px-4 py-3 text-center text-sm font-semibold text-[#28715f]"
             href="/demos/skill-algorithm-evolution.html"
           >
-            查看算法进化演示
+            体验demo
           </a>
         </section>
       </main>
