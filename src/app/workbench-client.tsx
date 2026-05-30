@@ -460,6 +460,12 @@ export default function WorkbenchClient() {
           <button className="mt-5 w-full rounded-md bg-[#1f2933] px-4 py-3 font-semibold text-white" onClick={login}>
             进入
           </button>
+          <a
+            className="mt-3 block rounded-md border border-[#28715f] px-4 py-3 text-center text-sm font-semibold text-[#28715f]"
+            href="/demos/skill-algorithm-evolution.html"
+          >
+            查看算法进化演示
+          </a>
         </section>
       </main>
     );
@@ -473,6 +479,12 @@ export default function WorkbenchClient() {
             <p className="text-xs font-semibold uppercase text-[#8a3f2c]">Skill Self Evolution</p>
             <h1 className="text-xl font-semibold">自进化实验工作台</h1>
           </div>
+          <a
+            className="rounded-md bg-[#28715f] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1f5c4e]"
+            href="/demos/skill-algorithm-evolution.html"
+          >
+            算法进化演示
+          </a>
           <StatusPill label="当前 skill" value={skill.metadata.name || "未命名"} />
           <label className="text-sm">
             模型

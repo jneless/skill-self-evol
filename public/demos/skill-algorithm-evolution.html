@@ -1,0 +1,4035 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skill Text Evolution Algorithms</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7f5;
+        --panel: #ffffff;
+        --panel-soft: #f8faf9;
+        --line: #d7ddd7;
+        --text: #1f2933;
+        --muted: #667085;
+        --accent: #28715f;
+        --accent-soft: #e6f1ed;
+        --accent-2: #8a3f2c;
+        --accent-2-soft: #f6ebe7;
+        --warning: #b7791f;
+        --warning-soft: #fff4d6;
+        --danger: #b42318;
+        --danger-soft: #fdecec;
+        --success: #157347;
+        --field: #c8d0ca;
+        --code: #111827;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: #191b1f;
+        font-family: Arial, Helvetica, sans-serif;
+        min-height: 100vh;
+      }
+
+      button {
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .app {
+        min-height: 100vh;
+      }
+
+      .topbar {
+        background: white;
+        border-bottom: 1px solid var(--line);
+        padding: 16px 24px;
+      }
+
+      .topbar-inner {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin: 0 auto;
+        max-width: 1320px;
+      }
+
+      .brand {
+        margin-right: auto;
+      }
+
+      .eyebrow {
+        color: var(--accent-2);
+        font-size: 11px;
+        font-weight: 700;
+        margin: 0 0 4px;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 20px;
+        line-height: 1.2;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      h3 {
+        font-size: 15px;
+      }
+
+      .status {
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--text);
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+
+      .status span {
+        color: var(--muted);
+      }
+
+      .status strong {
+        margin-left: 8px;
+      }
+
+      .workspace {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: 270px minmax(0, 1fr);
+        margin: 0 auto;
+        max-width: 1320px;
+        padding: 24px;
+      }
+
+      .sidebar,
+      .panel,
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .sidebar {
+        align-self: start;
+        padding: 18px;
+      }
+
+      .sidebar-title {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+
+      .algorithm-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .algorithm-button {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: #344054;
+        display: grid;
+        gap: 4px;
+        padding: 12px;
+        text-align: left;
+      }
+
+      .algorithm-button strong {
+        font-size: 14px;
+      }
+
+      .algorithm-button span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .algorithm-button.active {
+        background: var(--text);
+        border-color: var(--text);
+        color: white;
+      }
+
+      .algorithm-button.active span {
+        color: #d5dce2;
+      }
+
+      .controls {
+        border-top: 1px solid var(--line);
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+        padding-top: 18px;
+      }
+
+      .button {
+        background: var(--text);
+        border: 1px solid var(--text);
+        border-radius: 6px;
+        color: white;
+        font-weight: 700;
+        padding: 10px 14px;
+      }
+
+      .button.secondary {
+        background: white;
+        border-color: var(--field);
+        color: var(--text);
+      }
+
+      .language-switch {
+        background: #edf2ef;
+        border: 1px solid var(--field);
+        border-radius: 6px;
+        display: grid;
+        gap: 3px;
+        grid-template-columns: 1fr 1fr;
+        padding: 3px;
+      }
+
+      .language-switch button {
+        background: transparent;
+        border: 0;
+        border-radius: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        padding: 8px 6px;
+      }
+
+      .language-switch button.active {
+        background: white;
+        color: var(--text);
+        box-shadow: 0 1px 4px rgba(31, 41, 51, 0.1);
+      }
+
+      .panel {
+        min-height: 760px;
+        padding: 22px;
+      }
+
+      .hero {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 1.15fr) minmax(380px, 0.85fr);
+      }
+
+      .case-card {
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      .case-card h2 {
+        margin-bottom: 10px;
+      }
+
+      .case-card p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .goal-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 14px;
+      }
+
+      .goal {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 10px;
+      }
+
+      .goal strong {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 5px;
+      }
+
+      .goal span {
+        color: var(--muted);
+        display: block;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .score-card {
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+      }
+
+      .score-head {
+        align-items: baseline;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .score-main {
+        color: var(--accent);
+        font-size: 42px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .score-main small {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .metric-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .metric {
+        display: grid;
+        gap: 6px;
+      }
+
+      .metric-label {
+        align-items: center;
+        display: flex;
+        font-size: 12px;
+        justify-content: space-between;
+      }
+
+      .bar {
+        background: #e9eeea;
+        border-radius: 999px;
+        height: 8px;
+        overflow: hidden;
+      }
+
+      .bar span {
+        background: var(--accent);
+        border-radius: inherit;
+        display: block;
+        height: 100%;
+        transition: width 520ms ease;
+        width: 0;
+      }
+
+      .main-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 1fr);
+        margin-top: 18px;
+      }
+
+      .stage {
+        min-height: 760px;
+        overflow: hidden;
+        padding: 18px;
+        position: relative;
+      }
+
+      .stage-header,
+      .result-header {
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        margin: -18px -18px 18px;
+        padding: 16px 18px;
+      }
+
+      .round-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .round-tab {
+        background: white;
+        border: 1px solid var(--field);
+        border-radius: 999px;
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 700;
+        padding: 7px 10px;
+      }
+
+      .round-tab.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+
+      .animation-canvas {
+        background:
+          linear-gradient(90deg, rgba(215, 221, 215, 0.42) 1px, transparent 1px),
+          linear-gradient(rgba(215, 221, 215, 0.42) 1px, transparent 1px),
+          var(--panel-soft);
+        background-size: 32px 32px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        min-height: 660px;
+        max-height: 780px;
+        overflow: auto;
+        padding: 18px;
+        position: relative;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+      }
+
+      .animation-canvas.dragging {
+        cursor: grabbing;
+      }
+
+      .animation-canvas [data-candidate] {
+        cursor: pointer;
+        position: relative;
+        translate: var(--drag-x, 0px) var(--drag-y, 0px);
+        will-change: translate;
+      }
+
+      .animation-canvas [data-candidate]:active,
+      .animation-canvas [data-candidate].node-dragging {
+        cursor: grabbing;
+        z-index: 20;
+      }
+
+      .legend {
+        display: none;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .chip {
+        align-items: center;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        display: inline-flex;
+        font-size: 12px;
+        gap: 6px;
+        padding: 6px 9px;
+      }
+
+      .chip::before {
+        background: var(--accent);
+        border-radius: 999px;
+        content: "";
+        height: 8px;
+        width: 8px;
+      }
+
+      .chip.warn::before {
+        background: var(--warning);
+      }
+
+      .chip.hot::before {
+        background: var(--accent-2);
+      }
+
+      .result-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        margin-top: 16px;
+      }
+
+      .result-panel {
+        min-height: 360px;
+        padding: 18px;
+      }
+
+      .code-block,
+      .diff-view {
+        background: #0f172a;
+        border-radius: 8px;
+        color: #dbe4ed;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        margin: 0;
+        max-height: 420px;
+        overflow: auto;
+        padding: 14px;
+        white-space: pre-wrap;
+      }
+
+      .diff-line {
+        display: block;
+      }
+
+      .diff-line.add {
+        color: #9be9a8;
+      }
+
+      .diff-line.remove {
+        color: #ffb4ab;
+      }
+
+      .diff-line.meta {
+        color: #93c5fd;
+      }
+
+      .compare-table {
+        border-collapse: collapse;
+        font-size: 13px;
+        width: 100%;
+      }
+
+      .compare-table th,
+      .compare-table td {
+        border-bottom: 1px solid var(--line);
+        padding: 11px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .compare-table th {
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .compare-table strong {
+        color: var(--accent);
+      }
+
+      body {
+        overflow: hidden;
+      }
+
+      .app {
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .topbar,
+      .hero,
+      .panel > .result-panel {
+        display: none;
+      }
+
+      .workspace {
+        display: block;
+        height: 100vh;
+        margin: 0;
+        max-width: none;
+        padding: 0;
+      }
+
+      .sidebar {
+        box-shadow: 0 18px 50px rgba(31, 41, 51, 0.14);
+        left: 20px;
+        max-height: calc(100vh - 40px);
+        overflow: auto;
+        position: fixed;
+        top: 20px;
+        width: 276px;
+        z-index: 40;
+      }
+
+      .panel {
+        background: transparent;
+        border: 0;
+        min-height: 100vh;
+        padding: 0;
+      }
+
+      .main-grid {
+        display: block;
+        margin: 0;
+      }
+
+      .stage {
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        inset: 0;
+        min-height: 0;
+        overflow: visible;
+        padding: 0;
+        position: fixed;
+      }
+
+      .stage-header {
+        backdrop-filter: blur(16px);
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 16px 40px rgba(31, 41, 51, 0.12);
+        left: 320px;
+        margin: 0;
+        padding: 13px 14px;
+        position: fixed;
+        right: 24px;
+        top: 20px;
+        z-index: 35;
+      }
+
+      .stage-header h2 {
+        font-size: 18px;
+      }
+
+      .stage-header .muted {
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .selected-strip {
+        backdrop-filter: blur(16px);
+        background: rgba(248, 250, 249, 0.92);
+        box-shadow: 0 12px 30px rgba(31, 41, 51, 0.08);
+        left: 320px;
+        margin: 0;
+        position: fixed;
+        right: 24px;
+        top: 102px;
+        z-index: 34;
+      }
+
+      .animation-canvas {
+        border: 0;
+        border-radius: 0;
+        inset: 0;
+        height: 100vh;
+        max-height: none;
+        min-height: 0;
+        padding: 176px 40px 76px 320px;
+        position: fixed;
+      }
+
+      .legend {
+        bottom: 22px;
+        display: none;
+        left: 320px;
+        margin: 0;
+        position: fixed;
+        z-index: 35;
+      }
+
+      .result-grid {
+        backdrop-filter: blur(18px);
+        background: rgba(248, 250, 249, 0.94);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 24px 70px rgba(31, 41, 51, 0.2);
+        display: grid;
+        gap: 12px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        height: min(640px, calc(100vh - 144px));
+        left: calc((100vw + 296px) / 2);
+        margin: 0;
+        padding: 12px;
+        position: fixed;
+        top: 112px;
+        transform: translateX(-50%);
+        width: min(980px, calc(100vw - 360px));
+        z-index: 60;
+      }
+
+      body.detail-closed .result-grid {
+        display: none;
+      }
+
+      .result-panel {
+        border: 1px solid var(--line);
+        box-shadow: 0 16px 40px rgba(31, 41, 51, 0.12);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+        padding: 14px;
+      }
+
+      .result-header {
+        flex: 0 0 auto;
+        margin: -14px -14px 12px;
+        padding: 12px 14px;
+      }
+
+      .icon-button {
+        align-items: center;
+        background: white;
+        border: 1px solid var(--field);
+        border-radius: 6px;
+        color: var(--muted);
+        display: inline-flex;
+        font-size: 14px;
+        font-weight: 800;
+        height: 30px;
+        justify-content: center;
+        width: 30px;
+      }
+
+      .result-actions {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+      }
+
+      .diff-select {
+        background: white;
+        border: 1px solid var(--field);
+        border-radius: 6px;
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 700;
+        height: 30px;
+        max-width: 230px;
+        padding: 0 8px;
+      }
+
+      .use-case-modal {
+        backdrop-filter: blur(18px);
+        background: rgba(248, 250, 249, 0.96);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 24px 70px rgba(31, 41, 51, 0.2);
+        display: grid;
+        gap: 12px;
+        left: calc((100vw + 296px) / 2);
+        max-height: min(720px, calc(100vh - 96px));
+        overflow: auto;
+        padding: 16px;
+        position: fixed;
+        top: 64px;
+        transform: translateX(-50%);
+        width: min(920px, calc(100vw - 360px));
+        z-index: 70;
+      }
+
+      body.use-cases-closed .use-case-modal {
+        display: none;
+      }
+
+      .use-case-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .use-case-card {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .use-case-card strong {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+
+      .use-case-card span {
+        color: var(--muted);
+        display: block;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .code-block,
+      .diff-view {
+        flex: 1 1 auto;
+        max-height: none;
+        min-height: 0;
+      }
+
+      .genome-board {
+        display: grid;
+        gap: 14px;
+      }
+
+      .candidate-row {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .candidate {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        display: block;
+        min-height: 92px;
+        padding: 12px;
+        text-align: left;
+        width: 100%;
+      }
+
+      .candidate.selected,
+      .field.selected,
+      .clone.selected,
+      .path-node.selected,
+      .mutation-block.selected,
+      .particle.selected {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(40, 113, 95, 0.14);
+      }
+
+      .candidate strong {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+
+      .candidate small,
+      .clone small,
+      .field small {
+        color: var(--muted);
+        display: block;
+        font-size: 11px;
+        line-height: 1.45;
+        margin-top: 8px;
+      }
+
+      .gene {
+        border-radius: 6px;
+        color: white;
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        margin: 3px 3px 0 0;
+        padding: 6px 8px;
+      }
+
+      .gene.description {
+        background: var(--accent);
+      }
+
+      .gene.instruction {
+        background: #5b667a;
+      }
+
+      .gene.workflow {
+        background: var(--accent-2);
+      }
+
+      .gene.output {
+        background: var(--warning);
+      }
+
+      .gene.guardrails {
+        background: #475467;
+      }
+
+      .gene.failureHandling {
+        background: var(--danger);
+      }
+
+      .gene.examples {
+        background: #6b46c1;
+      }
+
+      .gene.active {
+        animation: geneFly 900ms ease both;
+      }
+
+      .offspring {
+        background: white;
+        border: 2px solid var(--accent);
+        border-radius: 8px;
+        margin: 4px auto 0;
+        max-width: 520px;
+        min-height: 72px;
+        padding: 12px;
+        text-align: center;
+      }
+
+      .genetic-tree {
+        display: grid;
+        gap: 10px;
+        min-height: 292px;
+        min-width: 420px;
+        padding-bottom: 8px;
+      }
+
+      .tree-layer {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 88px minmax(0, 1fr);
+      }
+
+      .tree-round {
+        align-items: center;
+        color: var(--muted);
+        display: flex;
+        font-size: 12px;
+        font-weight: 700;
+        justify-content: flex-end;
+        text-transform: uppercase;
+      }
+
+      .tree-nodes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .tree-node {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        min-height: 78px;
+        padding: 10px;
+        position: relative;
+        text-align: left;
+        width: min(220px, 100%);
+      }
+
+      .tree-node.selected {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(40, 113, 95, 0.14);
+      }
+
+      .tree-node strong {
+        display: block;
+        font-size: 12px;
+        line-height: 1.3;
+        margin-bottom: 7px;
+        max-width: calc(100% - 50px);
+      }
+
+      .tree-node small {
+        color: var(--muted);
+        display: block;
+        font-size: 11px;
+        line-height: 1.4;
+        margin-top: 7px;
+      }
+
+      .node-score {
+        align-items: baseline;
+        background: var(--accent);
+        border-radius: 999px;
+        color: white;
+        display: inline-flex;
+        font-size: 14px;
+        font-weight: 900;
+        gap: 2px;
+        line-height: 1;
+        padding: 7px 9px;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+      }
+
+      .node-score span {
+        font-size: 10px;
+        font-weight: 800;
+        opacity: 0.85;
+      }
+
+      .particle-tag {
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        display: inline-flex;
+        font-size: 10px;
+        font-weight: 800;
+        margin-bottom: 7px;
+        padding: 5px 7px;
+      }
+
+      .particle-tag.best {
+        background: var(--accent-soft);
+        border-color: #bed7ce;
+        color: var(--accent);
+      }
+
+      .particle-tag.global {
+        background: var(--warning-soft);
+        border-color: #e4c671;
+        color: var(--warning);
+      }
+
+      .tree-edge-row {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 88px minmax(0, 1fr);
+      }
+
+      .tree-edges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        position: relative;
+      }
+
+      .tree-edges::before {
+        background: var(--line);
+        content: "";
+        height: 18px;
+        left: 50%;
+        position: absolute;
+        top: -8px;
+        width: 1px;
+      }
+
+      .tree-edge {
+        background: var(--accent-soft);
+        border: 1px solid #bed7ce;
+        border-radius: 999px;
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 700;
+        padding: 6px 9px;
+        position: relative;
+      }
+
+      .tree-edge.mutation {
+        background: var(--accent-2-soft);
+        border-color: #e2c2b8;
+        color: var(--accent-2);
+      }
+
+      .tree-edge.cross {
+        background: var(--warning-soft);
+        border-color: #e4c671;
+        color: var(--warning);
+      }
+
+      .selected-strip {
+        align-items: center;
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: minmax(160px, 0.7fr) minmax(0, 1.3fr) 110px;
+        margin-bottom: 12px;
+        padding: 10px 12px;
+      }
+
+      .selected-strip strong {
+        font-size: 13px;
+      }
+
+      .selected-strip span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .selected-strip .score-pill {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 800;
+        justify-self: end;
+        padding: 7px 10px;
+      }
+
+      .selected-strip .chunk-summary {
+        color: var(--text);
+        font-weight: 700;
+        grid-column: 1 / -1;
+      }
+
+      .genetic-pedigree {
+        height: var(--stage-h, 1180px);
+        width: var(--stage-w, 1320px);
+        position: relative;
+      }
+
+      .pedigree-lines {
+        height: var(--stage-h, 1180px);
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        width: var(--stage-w, 1320px);
+        z-index: 1;
+      }
+
+      .pedigree-line {
+        fill: none;
+        stroke: var(--accent);
+        stroke-linecap: round;
+        stroke-width: 3.5;
+        filter: drop-shadow(0 2px 2px rgba(31, 41, 51, 0.12));
+        marker-end: url(#arrow-keep);
+      }
+
+      .pedigree-line.cross {
+        stroke: var(--warning);
+        stroke-dasharray: 6 4;
+        marker-end: url(#arrow-cross);
+      }
+
+      .pedigree-line.mutation {
+        stroke: var(--accent-2);
+        marker-end: url(#arrow-mutation);
+      }
+
+      .pedigree-line.direction {
+        stroke: #3b82f6;
+        stroke-dasharray: 9 6;
+        stroke-width: 3;
+        marker-end: url(#arrow-direction);
+      }
+
+      .tree-node.ghost-node {
+        cursor: default;
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .tree-node.ghost-node.selected {
+        box-shadow: none;
+      }
+
+      .operation-label {
+        background: rgba(255, 255, 255, 0.96);
+        border: 2px solid var(--accent);
+        border-radius: 999px;
+        box-shadow: 0 6px 14px rgba(31, 41, 51, 0.12);
+        color: var(--text);
+        font-size: 11.5px;
+        font-weight: 700;
+        line-height: 1.2;
+        left: var(--x);
+        max-width: 150px;
+        padding: 6px 9px;
+        position: absolute;
+        text-align: center;
+        top: var(--y);
+        transform: translate(-50%, -50%);
+        white-space: normal;
+        z-index: 3;
+      }
+
+      .operation-label::before {
+        border-radius: 999px;
+        content: "";
+        display: inline-block;
+        height: 7px;
+        margin-right: 5px;
+        vertical-align: 1px;
+        width: 7px;
+      }
+
+      .operation-label::before {
+        background: var(--accent);
+      }
+
+      .operation-label.cross {
+        background: var(--warning-soft);
+        border-color: #e4c671;
+        color: var(--warning);
+      }
+
+      .operation-label.cross::before {
+        background: var(--warning);
+      }
+
+      .operation-label.mutation {
+        background: var(--accent-2-soft);
+        border-color: #e2c2b8;
+        color: var(--accent-2);
+      }
+
+      .operation-label.mutation::before {
+        background: var(--accent-2);
+      }
+
+      .operation-label.direction {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1d4ed8;
+      }
+
+      .operation-label.direction::before {
+        background: #3b82f6;
+      }
+
+      .tree-node.map-node {
+        height: var(--graph-node-h);
+        left: var(--x);
+        min-height: var(--graph-node-h);
+        overflow: hidden;
+        position: absolute;
+        top: var(--y);
+        transform: translateX(-50%);
+        width: var(--graph-node-w);
+        z-index: 2;
+      }
+
+      .map-round {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        left: 6px;
+        position: absolute;
+        text-transform: uppercase;
+        top: var(--y);
+        z-index: 2;
+      }
+
+      .evolution-map {
+        height: var(--stage-h, 900px);
+        position: relative;
+        width: var(--stage-w, 1060px);
+      }
+
+      .evolution-node {
+        height: var(--graph-node-h);
+        left: var(--x);
+        min-height: var(--graph-node-h);
+        overflow: hidden;
+        position: absolute;
+        top: var(--y);
+        transform: translateX(-50%);
+        width: var(--graph-node-w);
+        z-index: 2;
+      }
+
+      .animation-canvas .evolution-node {
+        position: absolute;
+      }
+
+      .evolution-label {
+        left: var(--x);
+        position: absolute;
+        top: var(--y);
+        z-index: 3;
+      }
+
+      @keyframes geneFly {
+        0% {
+          opacity: 0.35;
+          transform: translateY(-18px) scale(0.94);
+        }
+        70% {
+          opacity: 1;
+          transform: translateY(4px) scale(1.03);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .swarm-plane {
+        height: 292px;
+        position: relative;
+      }
+
+      .axis-label {
+        color: var(--muted);
+        font-size: 11px;
+        position: absolute;
+      }
+
+      .axis-label.x {
+        bottom: 4px;
+        right: 12px;
+      }
+
+      .axis-label.y {
+        left: 8px;
+        top: 8px;
+      }
+
+      .best-point {
+        background: var(--accent-2);
+        border-radius: 999px;
+        box-shadow: 0 0 0 8px rgba(138, 63, 44, 0.13);
+        height: 16px;
+        left: var(--best-x);
+        position: absolute;
+        top: var(--best-y);
+        transform: translate(-50%, -50%);
+        width: 16px;
+      }
+
+      .particle {
+        background: var(--accent);
+        border: 2px solid white;
+        border-radius: 999px;
+        box-shadow: 0 8px 18px rgba(31, 41, 51, 0.18);
+        color: transparent;
+        height: 22px;
+        left: var(--from-x);
+        padding: 0;
+        position: absolute;
+        top: var(--from-y);
+        transform: translate(-50%, -50%);
+        width: 22px;
+      }
+
+      .particle.animate {
+        animation: particleMove 1050ms ease forwards;
+      }
+
+      @keyframes particleMove {
+        to {
+          left: var(--to-x);
+          top: var(--to-y);
+        }
+      }
+
+      .path-map {
+        height: 292px;
+        position: relative;
+      }
+
+      .path-node {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        left: var(--x);
+        padding: 9px 10px;
+        position: absolute;
+        top: var(--y);
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+      }
+
+      .path-node.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+
+      .trail {
+        background: var(--accent-2);
+        border-radius: 999px;
+        height: var(--thick);
+        left: var(--x);
+        opacity: 0.8;
+        position: absolute;
+        top: var(--y);
+        transform: rotate(var(--angle));
+        transform-origin: left center;
+        width: var(--len);
+      }
+
+      .ant {
+        background: var(--code);
+        border-radius: 999px;
+        height: 10px;
+        left: var(--start-x);
+        position: absolute;
+        top: var(--start-y);
+        transform: translate(-50%, -50%);
+        width: 10px;
+      }
+
+      .ant.animate {
+        animation: antWalk 1200ms linear forwards;
+      }
+
+      @keyframes antWalk {
+        to {
+          left: var(--end-x);
+          top: var(--end-y);
+        }
+      }
+
+      .bee-field {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        min-height: 292px;
+      }
+
+      .field {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        min-height: 220px;
+        padding: 12px;
+        position: relative;
+        text-align: left;
+      }
+
+      .field.active {
+        border-color: var(--accent);
+        box-shadow: inset 0 0 0 2px rgba(40, 113, 95, 0.14);
+      }
+
+      .field strong {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+
+      .field span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .bee {
+        background: var(--warning);
+        border-radius: 999px;
+        height: 14px;
+        position: absolute;
+        width: 20px;
+      }
+
+      .bee.scout {
+        animation: scoutBuzz 1500ms ease-in-out infinite alternate;
+        left: 16%;
+        top: 72%;
+      }
+
+      .bee.worker {
+        animation: workerBuzz 1200ms ease-in-out infinite alternate;
+        left: 50%;
+        top: 52%;
+      }
+
+      .bee.observer {
+        animation: observerBuzz 1350ms ease-in-out infinite alternate;
+        left: 70%;
+        top: 78%;
+      }
+
+      @keyframes scoutBuzz {
+        to {
+          transform: translate(64px, -96px);
+        }
+      }
+
+      @keyframes workerBuzz {
+        to {
+          transform: translate(-28px, -58px);
+        }
+      }
+
+      @keyframes observerBuzz {
+        to {
+          transform: translate(-78px, -36px);
+        }
+      }
+
+      .immune-board {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: 1fr 1fr;
+        min-height: 292px;
+      }
+
+      .antigen,
+      .clone {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        padding: 12px;
+        text-align: left;
+        width: 100%;
+      }
+
+      .antigen {
+        border-color: var(--danger);
+      }
+
+      .antigen strong,
+      .clone strong {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+
+      .antigen p,
+      .clone p {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .clone.pass {
+        border-color: var(--accent);
+      }
+
+      .clone.reject {
+        opacity: 0.55;
+      }
+
+      .clone.animate {
+        animation: clonePulse 900ms ease both;
+      }
+
+      @keyframes clonePulse {
+        0% {
+          transform: translateX(-20px) scale(0.96);
+        }
+        60% {
+          transform: translateX(5px) scale(1.02);
+        }
+        100% {
+          transform: translateX(0) scale(1);
+        }
+      }
+
+      .anneal-board {
+        display: grid;
+        gap: 18px;
+        min-height: 292px;
+      }
+
+      .thermometer {
+        background: #e9eeea;
+        border-radius: 999px;
+        height: 28px;
+        overflow: hidden;
+      }
+
+      .thermometer span {
+        background: linear-gradient(90deg, var(--accent-2), var(--warning), var(--accent));
+        display: block;
+        height: 100%;
+        transition: width 700ms ease;
+        width: var(--temp);
+      }
+
+      .temperature-row {
+        align-items: center;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 90px 1fr 70px;
+      }
+
+      .temperature-row strong,
+      .temperature-row span {
+        font-size: 12px;
+      }
+
+      .mutation-blocks {
+        display: grid;
+        gap: 10px;
+      }
+
+      .mutation-block {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        overflow: hidden;
+        padding: 0;
+        text-align: left;
+        width: 100%;
+      }
+
+      .mutation-block span {
+        background: var(--accent-2-soft);
+        color: var(--accent-2);
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 10px;
+        width: var(--scope);
+      }
+
+      .candidate-detail-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .candidate-meta {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+      }
+
+      .candidate-meta strong {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+
+      .candidate-meta span {
+        color: var(--muted);
+        display: block;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .mutation-block.active span {
+        animation: heatWave 900ms ease both;
+      }
+
+      @keyframes heatWave {
+        0% {
+          filter: saturate(0.8);
+          transform: translateX(-18px);
+        }
+        100% {
+          filter: saturate(1.2);
+          transform: translateX(0);
+        }
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 1100px) {
+        .workspace,
+        .hero,
+        .main-grid,
+        .result-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+
+        .goal-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .workspace,
+        .topbar {
+          padding: 16px;
+        }
+
+        .panel {
+          padding: 16px;
+        }
+
+        .goal-grid,
+        .candidate-row,
+        .bee-field,
+        .immune-board {
+          grid-template-columns: 1fr;
+        }
+
+        .score-main {
+          font-size: 34px;
+        }
+      }
+
+      @media (max-width: 1100px) {
+        .workspace {
+          display: block;
+          padding: 0;
+        }
+
+        .sidebar {
+          left: 14px;
+          max-height: 46vh;
+          position: fixed;
+          top: 14px;
+          width: min(276px, calc(100vw - 28px));
+        }
+
+        .stage-header,
+        .selected-strip,
+        .legend {
+          left: 306px;
+          right: 14px;
+        }
+
+        .selected-strip {
+          grid-template-columns: 1fr;
+          top: 112px;
+        }
+
+        .selected-strip .score-pill {
+          justify-self: start;
+        }
+
+        .animation-canvas {
+          padding: 190px 24px 76px 306px;
+        }
+
+        .result-grid {
+          height: min(520px, calc(100vh - 128px));
+          left: 50%;
+          top: 96px;
+          transform: translateX(-50%);
+          width: min(760px, calc(100vw - 28px));
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .stage-header,
+        .selected-strip,
+        .legend {
+          left: 14px;
+        }
+
+        .stage-header {
+          top: 290px;
+        }
+
+        .selected-strip {
+          right: 14px;
+          top: 382px;
+        }
+
+        .animation-canvas {
+          padding: 470px 18px 76px 18px;
+        }
+
+        .result-grid {
+          height: min(620px, calc(100vh - 36px));
+          grid-template-columns: 1fr;
+          grid-template-rows: 1fr 1fr;
+          top: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body class="detail-closed use-cases-closed">
+    <main class="app">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <p class="eyebrow">Skill Self Evolution</p>
+            <h1 data-i18n="pageTitle">How Nature-Inspired Algorithms Rewrite skill.md</h1>
+          </div>
+          <div class="status"><span data-i18n="caseLabel">Case</span><strong>meeting-summary</strong></div>
+          <div class="status"><span data-i18n="inputLabel">Input</span><strong data-i18n="inputValue">meeting notes</strong></div>
+          <div class="status"><span data-i18n="stageLabel">Stage</span><strong id="statusRound">Round 0</strong></div>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar">
+          <div class="sidebar-title" data-i18n="sidebarTitle">Evolution Algorithms</div>
+          <div class="algorithm-list" id="algorithmList"></div>
+          <div class="controls">
+            <div class="language-switch" aria-label="Language">
+              <button type="button" data-language-option="en">EN</button>
+              <button type="button" data-language-option="zh">中文</button>
+            </div>
+            <button class="button secondary" id="useCasesButton" data-i18n="useCases">Optimization Use Cases</button>
+          </div>
+        </aside>
+
+        <section class="panel">
+          <div class="hero">
+            <div class="case-card">
+              <h2 data-i18n="heroTitle">One skill can evolve through very different text paths</h2>
+              <p data-i18n="heroCopy">
+                The original skill has only a rough description and one execution instruction.
+                This demo shows how each algorithm chooses edits, changes chunks, and reaches a different final result.
+              </p>
+              <div class="goal-grid">
+                <div class="goal">
+                  <strong data-i18n="goalTriggerTitle">Triggerability</strong>
+                  <span data-i18n="goalTriggerCopy">Trigger on meeting-summary requests while avoiding background mentions.</span>
+                </div>
+                <div class="goal">
+                  <strong data-i18n="goalExecutionTitle">Execution Quality</strong>
+                  <span data-i18n="goalExecutionCopy">Produce summaries, decisions, action items, owners, and deadlines.</span>
+                </div>
+                <div class="goal">
+                  <strong data-i18n="goalRobustnessTitle">Robustness</strong>
+                  <span data-i18n="goalRobustnessCopy">Mark missing information instead of inventing owners or deadlines.</span>
+                </div>
+                <div class="goal">
+                  <strong data-i18n="goalStructureTitle">Text Structure</strong>
+                  <span data-i18n="goalStructureCopy">Grow description, workflow, output, and guardrails chunks.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card score-card">
+              <div class="score-head">
+                <div>
+                  <p class="muted" data-i18n="currentScore">Current score</p>
+                  <div class="score-main"><span id="scoreTotal">61</span><small>/100</small></div>
+                </div>
+                <div class="status"><span data-i18n="algorithmLabel">Algorithm</span><strong id="statusAlgorithm">Genetic Algorithm</strong></div>
+              </div>
+              <div class="metric-list">
+                <div class="metric">
+                  <div class="metric-label"><span data-i18n="triggerAccuracy">Trigger Accuracy</span><strong id="metricTriggerText">58</strong></div>
+                  <div class="bar"><span id="metricTrigger"></span></div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label"><span data-i18n="executionQuality">Execution Quality</span><strong id="metricExecutionText">62</strong></div>
+                  <div class="bar"><span id="metricExecution"></span></div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label"><span data-i18n="robustness">Robustness</span><strong id="metricStabilityText">60</strong></div>
+                  <div class="bar"><span id="metricStability"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="main-grid">
+            <section class="card stage">
+              <div class="stage-header">
+                <div>
+                  <h2 id="stageTitle">Genetic Algorithm: Selection, Crossover, Mutation</h2>
+                  <p class="muted" id="stageSubtitle">Split skill.md into genes and combine the strongest candidate chunks.</p>
+                </div>
+                <div class="round-tabs" id="roundTabs"></div>
+              </div>
+              <div class="selected-strip">
+                <strong id="candidateName" data-i18n="candidateFile">Candidate File</strong>
+                <span id="candidateSource" data-i18n="candidateHint">Click a node to inspect the candidate.</span>
+                <span class="score-pill" id="candidateScore">0 pts</span>
+                <span class="chunk-summary" id="candidateChunks">Chunks: -</span>
+              </div>
+              <div class="animation-canvas" id="animationCanvas"></div>
+              <div class="legend" id="legend"></div>
+            </section>
+          </div>
+
+          <div class="result-grid">
+            <section class="card result-panel">
+              <div class="result-header">
+                <h2 data-i18n="candidateDiff">Candidate Diff</h2>
+                <div class="result-actions">
+                  <select class="diff-select" id="diffBaseSelect" aria-label="Diff base"></select>
+                  <button class="icon-button" id="closeDetailButton" title="Close file viewer" aria-label="Close file viewer">×</button>
+                </div>
+              </div>
+              <pre class="diff-view" id="diffView"></pre>
+            </section>
+
+            <section class="card result-panel">
+              <div class="result-header">
+                <h2 data-i18n="candidateSkill">Candidate skill.md</h2>
+                <span class="status"><span data-i18n="versionLabel">Version</span><strong id="currentVersion">Round 0</strong></span>
+              </div>
+              <pre class="code-block" id="skillText"></pre>
+            </section>
+          </div>
+
+          <section class="card result-panel" style="margin-top: 16px">
+            <div class="result-header">
+              <h2 data-i18n="comparisonTitle">Algorithm Result Comparison</h2>
+              <span class="status"><span data-i18n="sameCase">Same case</span><strong>meeting-summary</strong></span>
+            </div>
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th data-i18n="tableAlgorithm">Algorithm</th>
+                  <th data-i18n="tableScore">Final score</th>
+                  <th data-i18n="tableBehavior">Text-editing behavior</th>
+                  <th data-i18n="tableScenario">Best-fit skill scenario</th>
+                </tr>
+              </thead>
+              <tbody id="compareBody"></tbody>
+            </table>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <section class="use-case-modal" id="useCaseModal" aria-label="Algorithm optimization use cases">
+      <div class="result-header">
+        <h2 data-i18n="useCaseTitle">Optimization Use Cases</h2>
+        <button class="icon-button" id="closeUseCasesButton" title="Close use cases" aria-label="Close use cases">×</button>
+      </div>
+      <div class="use-case-grid" id="useCaseGrid"></div>
+    </section>
+
+    <script>
+      const currentLanguage = new URLSearchParams(window.location.search).get("lang") === "zh" ? "zh" : "en";
+      const uiText = {
+        en: {
+          pageTitle: "How Nature-Inspired Algorithms Rewrite skill.md",
+          caseLabel: "Case",
+          inputLabel: "Input",
+          inputValue: "meeting notes",
+          stageLabel: "Stage",
+          sidebarTitle: "Evolution Algorithms",
+          useCases: "Optimization Use Cases",
+          heroTitle: "One skill can evolve through very different text paths",
+          heroCopy:
+            "The original skill has only a rough description and one execution instruction. This demo shows how each algorithm chooses edits, changes chunks, and reaches a different final result.",
+          goalTriggerTitle: "Triggerability",
+          goalTriggerCopy: "Trigger on meeting-summary requests while avoiding background mentions.",
+          goalExecutionTitle: "Execution Quality",
+          goalExecutionCopy: "Produce summaries, decisions, action items, owners, and deadlines.",
+          goalRobustnessTitle: "Robustness",
+          goalRobustnessCopy: "Mark missing information instead of inventing owners or deadlines.",
+          goalStructureTitle: "Text Structure",
+          goalStructureCopy: "Grow description, workflow, output, and guardrails chunks.",
+          currentScore: "Current score",
+          algorithmLabel: "Algorithm",
+          triggerAccuracy: "Trigger Accuracy",
+          executionQuality: "Execution Quality",
+          robustness: "Robustness",
+          candidateFile: "Candidate File",
+          candidateHint: "Click a node to inspect the candidate.",
+          candidateDiff: "Candidate Diff",
+          candidateSkill: "Candidate skill.md",
+          versionLabel: "Version",
+          comparisonTitle: "Algorithm Result Comparison",
+          sameCase: "Same case",
+          tableAlgorithm: "Algorithm",
+          tableScore: "Final score",
+          tableBehavior: "Text-editing behavior",
+          tableScenario: "Best-fit skill scenario",
+          useCaseTitle: "Optimization Use Cases",
+          compareWith: "Compare with",
+          currentOption: "current",
+          chunks: "Chunks",
+          points: "pts",
+          round: "Round",
+          scenario: "Scenario",
+          editPattern: "Edit pattern",
+          mode: "Mode",
+          fullSkill: "Full skill.md",
+          seed: "seed",
+          closeFileViewer: "Close file viewer",
+          closeUseCases: "Close use cases",
+        },
+        zh: {
+          pageTitle: "自然启发算法如何改写 skill.md",
+          caseLabel: "案例",
+          inputLabel: "输入",
+          inputValue: "会议纪要",
+          stageLabel: "阶段",
+          sidebarTitle: "进化算法",
+          useCases: "优化场景",
+          heroTitle: "同一个 skill 可以沿着完全不同的文本路径进化",
+          heroCopy:
+            "原始 skill 只有粗略描述和一条执行指令。本页面展示每种算法如何选择修改、改变 chunk，并得到不同的最终结果。",
+          goalTriggerTitle: "可触发性",
+          goalTriggerCopy: "能在会议纪要请求中触发，同时避开背景式提及。",
+          goalExecutionTitle: "执行质量",
+          goalExecutionCopy: "产出摘要、决策、行动项、负责人和截止时间。",
+          goalRobustnessTitle: "鲁棒性",
+          goalRobustnessCopy: "信息缺失时标记缺失，而不是编造负责人或截止时间。",
+          goalStructureTitle: "文本结构",
+          goalStructureCopy: "让 description、workflow、output、guardrails 等 chunk 逐步生长。",
+          currentScore: "当前得分",
+          algorithmLabel: "算法",
+          triggerAccuracy: "触发准确性",
+          executionQuality: "执行质量",
+          robustness: "鲁棒性",
+          candidateFile: "候选文件",
+          candidateHint: "点击节点查看候选详情。",
+          candidateDiff: "候选 Diff",
+          candidateSkill: "候选 skill.md",
+          versionLabel: "版本",
+          comparisonTitle: "算法结果对比",
+          sameCase: "同一案例",
+          tableAlgorithm: "算法",
+          tableScore: "最终分",
+          tableBehavior: "文本修改特点",
+          tableScenario: "适用 skill 场景",
+          useCaseTitle: "优化场景",
+          compareWith: "对比",
+          currentOption: "当前",
+          chunks: "Chunks",
+          points: "分",
+          round: "第",
+          scenario: "场景",
+          editPattern: "修改特点",
+          mode: "模式",
+          fullSkill: "完整 skill.md",
+          seed: "种子",
+          closeFileViewer: "关闭文件窗口",
+          closeUseCases: "关闭优化场景",
+        },
+      };
+
+      function t(key) {
+        return uiText[currentLanguage][key] || uiText.en[key] || key;
+      }
+
+      const originalSkill = `---
+name: meeting-summary
+description: Use this skill when the user wants help with meeting notes.
+---
+
+Summarize the meeting and list action items.`;
+
+      const chunkLabels = {
+        description: "description",
+        instruction: "instruction",
+        workflow: "workflow",
+        output: "output",
+        guardrails: "guardrails",
+        failureHandling: "failure handling",
+        examples: "examples",
+      };
+
+      const skillChunks = {
+        descriptionOriginal: {
+          type: "description",
+          text: "description: Use this skill when the user wants help with meeting notes.",
+        },
+        descriptionPrecise: {
+          type: "description",
+          text: "description: Use this skill when the user asks to turn meeting transcripts, notes, or discussion records into a structured meeting summary.",
+        },
+        descriptionFinal: {
+          type: "description",
+          text: "description: Use this skill when the user asks to turn meeting transcripts, meeting notes, or discussion records into a structured meeting summary with decisions and action items.",
+        },
+        instructionOriginal: {
+          type: "instruction",
+          text: "Summarize the meeting and list action items.",
+        },
+        workflowBasic: {
+          type: "workflow",
+          text: `Workflow:
+1. Read the meeting source.
+2. Identify topic, decisions, action items, and open questions.
+3. Summarize the meeting and list action items.`,
+        },
+        workflowStructured: {
+          type: "workflow",
+          text: `Workflow:
+1. Identify the meeting topic, participants, decisions, open questions, and action items.
+2. Separate confirmed facts from inferred context.
+3. Convert action items into owner, task, deadline, and evidence fields.`,
+        },
+        outputBasic: {
+          type: "output",
+          text: `Output format:
+- Summary
+- Decisions
+- Action items
+- Open questions`,
+        },
+        outputDetailed: {
+          type: "output",
+          text: `Output format:
+- Summary
+- Decisions
+- Action items: owner, task, deadline, evidence
+- Open questions`,
+        },
+        outputFinal: {
+          type: "output",
+          text: `Output format:
+- Summary
+- Decisions
+- Action items: owner, task, deadline, evidence
+- Open questions
+- Missing information`,
+        },
+        guardrails: {
+          type: "guardrails",
+          text: `When not to use:
+- Do not trigger when a meeting is only mentioned as background context.
+- Do not trigger for calendar scheduling or meeting-room booking.`,
+        },
+        failureHandling: {
+          type: "failureHandling",
+          text: `Failure handling:
+- Mark missing owner or deadline as "unspecified" instead of inventing details.
+- Put unavailable details under Missing information.`,
+        },
+        examples: {
+          type: "examples",
+          text: `Examples:
+- "Turn this meeting transcript into minutes"
+- "Extract decisions and action items"
+- "Summarize the decisions and follow-ups"`,
+        },
+      };
+
+      function chunkTypes(chunkIds) {
+        return chunkIds.map((chunkId) => skillChunks[chunkId].type);
+      }
+
+      function buildSkillFromChunks(chunkIds) {
+        const descriptionChunk = chunkIds.find((chunkId) => skillChunks[chunkId].type === "description");
+        const bodyChunks = chunkIds.filter((chunkId) => skillChunks[chunkId].type !== "description");
+        return [
+          "---",
+          "name: meeting-summary",
+          skillChunks[descriptionChunk].text,
+          "---",
+          "",
+          bodyChunks.map((chunkId) => skillChunks[chunkId].text).join("\n\n"),
+        ].join("\n");
+      }
+
+      const algorithms = [
+        {
+          id: "genetic",
+          name: "遗传算法",
+          short: "选择、交叉、变异",
+          title: "遗传算法：选择、交叉、变异",
+          subtitle: "把 skill.md 拆成基因片段，组合高分候选的优点。",
+          idea:
+            "遗传算法把 skill.md 看成一个文本个体，把 description、workflow、output format、guardrails 看成基因片段。每轮保留高分片段，交叉组合，再做小范围变异。",
+          mode: "片段交叉",
+          finalFeature: "组合多个候选的优秀片段，结构完整度提升最明显。",
+          bestFor: "需要同时优化触发、流程和输出格式的通用 skill。",
+          rounds: [
+            {
+              label: "Round 0",
+              score: { total: 61, trigger: 58, execution: 62, stability: 60 },
+              actions: ["保留原始 skill，作为所有候选的共同祖先。", "识别可进化片段：description、workflow、output、guardrails。"],
+              conclusion: "当前文本太短，只能模糊触发，执行结果也很难稳定评测。",
+              text: originalSkill,
+            },
+            {
+              label: "Round 1",
+              score: { total: 73, trigger: 76, execution: 70, stability: 68 },
+              actions: ["生成三个候选：强触发版、流程版、输出格式版。", "选择触发更准确的 description 片段进入下一代。"],
+              conclusion: "第一轮先让 skill 更容易在正确会议纪要请求中被触发。",
+              text: buildSkillFromChunks(["descriptionPrecise", "instructionOriginal"]),
+            },
+            {
+              label: "Round 2",
+              score: { total: 84, trigger: 84, execution: 86, stability: 80 },
+              actions: ["交叉组合高分候选中的 workflow 和 output format。", "变异出更细的行动项字段：owner、deadline、evidence。"],
+              conclusion: "第二轮把执行路径补完整，输出变得可检查、可比较。",
+              text: buildSkillFromChunks(["descriptionPrecise", "workflowStructured", "outputDetailed"]),
+            },
+            {
+              label: "Round 3",
+              score: { total: 90, trigger: 89, execution: 92, stability: 88 },
+              actions: ["淘汰冗余候选，保留结构最完整的文本。", "增加 failure handling，避免缺失信息时编造负责人或截止时间。"],
+              conclusion: "最终版本像是从多个候选中拼出最强组合，优点集中但变化幅度中等。",
+              text: buildSkillFromChunks(["descriptionFinal", "guardrails", "workflowStructured", "outputFinal", "failureHandling"]),
+            },
+          ],
+        },
+        {
+          id: "pso",
+          name: "粒子群优化",
+          short: "个体最好 + 全局最好",
+          title: "粒子群优化：完整 skill.md 粒子在文本空间收敛",
+          subtitle: "每个粒子都是一个完整候选 skill.md，description/workflow/output 等 chunk 是它的位置维度。",
+          idea:
+            "粒子群优化把每个完整候选 skill.md 看作一个粒子，把 description、workflow、output、guardrails 等 chunk 看作坐标维度。每个粒子保留自己的 pBest，同时参考全局 gBest，逐步吸收更好的文本维度。",
+          mode: "平滑收敛",
+          finalFeature: "每轮变化稳定，逐渐向综合最优文本靠拢。",
+          bestFor: "已有基础质量、希望稳步提升且避免大幅重写的 skill。",
+          rounds: [
+            {
+              label: "Round 0",
+              score: { total: 61, trigger: 58, execution: 62, stability: 60 },
+              actions: ["初始化多个完整 skill.md 粒子：触发导向、执行导向、鲁棒性导向。", "把 description、workflow、output 等 chunk 作为粒子的坐标维度。"],
+              conclusion: "每个粒子都能独立评测打分，起点还没有明确的全局最佳方向。",
+              text: originalSkill,
+            },
+            {
+              label: "Round 1",
+              score: { total: 72, trigger: 74, execution: 70, stability: 70 },
+              actions: ["触发导向粒子更新 description 维度。", "执行导向粒子更新 workflow 维度，分别形成自己的 pBest。"],
+              conclusion: "每个完整文件粒子都有自己的得分和 pBest，变化不大但方向明确。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user asks for meeting minutes, meeting recap, decisions, or action items from notes or transcript text.
+---
+
+Summarize the meeting and list action items.
+
+Avoid using this skill when the user is scheduling a meeting rather than summarizing one.`,
+            },
+            {
+              label: "Round 2",
+              score: { total: 82, trigger: 82, execution: 84, stability: 80 },
+              actions: ["部分粒子吸收自身 pBest 的 description/workflow 坐标。", "全局最佳 gBest 出现后，其他完整文件粒子开始向它靠拢。"],
+              conclusion: "粒子群是在完整 skill.md 文件之间移动，不是把单个 chunk 当成粒子。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user asks for meeting minutes, meeting recap, decisions, or action items from notes or transcript text.
+---
+
+Workflow:
+1. Read the meeting material and identify topic, key points, decisions, action items, and unresolved questions.
+2. Preserve source-grounded facts. Do not invent missing owners or dates.
+3. Produce a concise structured summary.
+
+Output:
+- Meeting summary
+- Decisions
+- Action items with owner and due date when available
+- Open questions
+
+Avoid using this skill when the user is scheduling a meeting rather than summarizing one.`,
+            },
+            {
+              label: "Round 3",
+              score: { total: 88, trigger: 88, execution: 89, stability: 87 },
+              actions: ["候选文件粒子向 gBest 收敛，只做小幅坐标更新。", "补充 examples 维度，帮助触发边界稳定。"],
+              conclusion: "最终文本提升稳定，diff 比遗传算法小，更像完整文件在文本空间里一步步调参。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user asks for meeting minutes, meeting recaps, decisions, or action items from notes, agendas, or transcript text.
+---
+
+When to use:
+- "整理这段会议纪要"
+- "从 transcript 里提取 action items"
+- "总结会议决策和后续事项"
+
+When not to use:
+- The user is scheduling, joining, or booking a meeting.
+- The meeting is only background context.
+
+Workflow:
+1. Identify topic, key points, decisions, action items, and unresolved questions.
+2. Preserve source-grounded facts. Do not invent missing owners or dates.
+3. Produce a concise structured summary.
+
+Output:
+- Meeting summary
+- Decisions
+- Action items with owner and due date when available
+- Open questions
+- Missing information`,
+            },
+          ],
+        },
+        {
+          id: "aco",
+          name: "蚁群优化",
+          short: "信息素强化有效修改路径",
+          title: "蚁群优化：强化高收益修改路径",
+          subtitle: "把修改动作看成路径，评测好的路径会留下更强信息素。",
+          idea:
+            "蚁群优化不只关心最终文本，也关心修改动作路径。若增加 negative examples 能降低误触发，这条路径的信息素增强，后续轮次会更倾向继续走这类编辑动作。",
+          mode: "路径强化",
+          finalFeature: "能解释哪条修改路径最有效，优化过程可追踪。",
+          bestFor: "需要理解优化因果、展示每类编辑动作收益的 skill。",
+          rounds: [
+            {
+              label: "Round 0",
+              score: { total: 61, trigger: 58, execution: 62, stability: 60 },
+              actions: ["初始化修改路径图。", "候选路径包括：改 description、加反例、补 workflow、补输出结构。"],
+              conclusion: "现在还不知道哪条修改路径收益最高。",
+              text: originalSkill,
+            },
+            {
+              label: "Round 1",
+              score: { total: 75, trigger: 82, execution: 70, stability: 72 },
+              actions: ["多条路径并行探索后，negative examples 路径收益最高。", "强化 when not to use，减少背景式提及误触发。"],
+              conclusion: "第一轮信息素集中到触发边界，误触发明显下降。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user asks to create meeting minutes or extract decisions and action items from meeting content.
+---
+
+When not to use:
+- Do not use when the user only says they had a meeting.
+- Do not use for calendar scheduling, room booking, or attendee availability.
+
+Summarize the meeting and list action items.`,
+            },
+            {
+              label: "Round 2",
+              score: { total: 83, trigger: 85, execution: 83, stability: 81 },
+              actions: ["信息素转移到 output schema 路径，因为执行评测收益更高。", "补充可评测字段，使结果更稳定。"],
+              conclusion: "蚁群开始形成主路径：先收紧边界，再补输出结构。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user asks to create meeting minutes or extract decisions and action items from meeting content.
+---
+
+When not to use:
+- Do not use when the user only says they had a meeting.
+- Do not use for calendar scheduling, room booking, or attendee availability.
+
+Workflow:
+1. Extract the meeting purpose, decisions, action items, and open questions.
+2. Keep uncertain details marked as missing.
+
+Output schema:
+- summary
+- decisions[]
+- action_items[]: owner, task, deadline, evidence
+- open_questions[]`,
+            },
+            {
+              label: "Round 3",
+              score: { total: 89, trigger: 90, execution: 88, stability: 88 },
+              actions: ["高收益路径固定为：触发边界 -> 输出结构 -> 缺失信息处理。", "对主路径做最后强化，保留可解释修改轨迹。"],
+              conclusion: "最终结果的亮点是可解释：用户能看到有效编辑动作如何被反复强化。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user asks to create meeting minutes, a recap, or action items from meeting transcripts, notes, or agenda fragments.
+---
+
+When to use:
+- The user provides or references meeting content and asks for summary, minutes, decisions, or follow-up work.
+
+When not to use:
+- Do not use when the user only says they had a meeting.
+- Do not use for calendar scheduling, room booking, or attendee availability.
+
+Workflow:
+1. Extract the meeting purpose, decisions, action items, and open questions.
+2. Preserve evidence from the source text.
+3. Keep uncertain details marked as missing.
+
+Output schema:
+- summary
+- decisions[]
+- action_items[]: owner, task, deadline, evidence
+- open_questions[]
+- missing_information[]`,
+            },
+          ],
+        },
+        {
+          id: "bee",
+          name: "人工蜂群",
+          short: "侦察、开发、观察选择",
+          title: "人工蜂群：先探索多风格，再深挖强方向",
+          subtitle: "侦察蜂发现不同写法，雇佣蜂局部优化，观察蜂选择收益最高方向。",
+          idea:
+            "人工蜂群把候选文本看成不同花源。侦察蜂寻找差异很大的写法，雇佣蜂围绕高收益写法继续细化，观察蜂根据评测收益选择下一轮投入。",
+          mode: "探索再开发",
+          finalFeature: "前期差异大，中后期围绕最好方向集中打磨。",
+          bestFor: "不知道 skill 应该采用哪种文本风格时，先探索再收敛。",
+          rounds: [
+            {
+              label: "Round 0",
+              score: { total: 61, trigger: 58, execution: 62, stability: 60 },
+              actions: ["把原始文本作为第一个花源。", "准备探索三种方向：强触发、强流程、强示例。"],
+              conclusion: "初始花源贫瘠，需要先广泛探索文本风格。",
+              text: originalSkill,
+            },
+            {
+              label: "Round 1",
+              score: { total: 74, trigger: 77, execution: 72, stability: 73 },
+              actions: ["侦察蜂生成三种风格候选。", "观察蜂发现“强流程版”整体收益更均衡。"],
+              conclusion: "蜂群不是立刻收敛，而是先用风格差异找方向。",
+              text: `---
+name: meeting-summary
+description: Use this skill for meeting-summary requests that include notes, transcripts, agendas, or decision records.
+---
+
+Workflow:
+1. Read the source.
+2. Summarize key points.
+3. List decisions and action items.
+
+Output:
+- Summary
+- Decisions
+- Action items`,
+            },
+            {
+              label: "Round 2",
+              score: { total: 85, trigger: 84, execution: 87, stability: 84 },
+              actions: ["雇佣蜂围绕强流程花源做局部开发。", "补充触发边界和缺失信息规则。"],
+              conclusion: "找到好方向后，蜂群会集中资源深挖，而不是平均优化所有方向。",
+              text: `---
+name: meeting-summary
+description: Use this skill for meeting-summary requests that include notes, transcripts, agendas, or decision records.
+---
+
+Trigger boundary:
+- Use when the user asks for minutes, recap, decisions, or action items.
+- Do not use for scheduling or logistics.
+
+Workflow:
+1. Read the source.
+2. Extract key points, decisions, action items, and open questions.
+3. Keep missing owner or deadline as unspecified.
+
+Output:
+- Summary
+- Decisions
+- Action items
+- Open questions
+- Missing information`,
+            },
+            {
+              label: "Round 3",
+              score: { total: 91, trigger: 90, execution: 92, stability: 90 },
+              actions: ["观察蜂确认强流程花源收益最高。", "最后加入少量 examples，提升泛化触发。"],
+              conclusion: "最终版本很均衡，像是先找到一个高质量文本风格，再连续打磨。",
+              text: `---
+name: meeting-summary
+description: Use this skill for meeting-summary requests that include notes, transcripts, agendas, discussion logs, or decision records.
+---
+
+Trigger boundary:
+- Use when the user asks for minutes, recap, decisions, or action items.
+- Do not use for scheduling, joining a meeting, room booking, or availability checks.
+
+Examples:
+- "把这段会议 transcript 整理成纪要"
+- "提取会议决策和 action items"
+
+Workflow:
+1. Read the source.
+2. Extract key points, decisions, action items, and open questions.
+3. Keep missing owner or deadline as unspecified.
+4. Preserve evidence snippets for action items when possible.
+
+Output:
+- Summary
+- Decisions
+- Action items: owner, task, deadline, evidence
+- Open questions
+- Missing information`,
+            },
+          ],
+        },
+        {
+          id: "immune",
+          name: "免疫克隆选择",
+          short: "围绕失败 case 精准修复",
+          title: "免疫克隆选择：把失败 case 当作抗原",
+          subtitle: "克隆高分候选，针对误触发、漏字段、编造信息做定向变异。",
+          idea:
+            "免疫克隆选择以失败 case 为中心。每个失败样本都是抗原，系统克隆表现较好的 skill 候选，并对克隆体做高频微调；通过测试的保留，重复或无效的清除。",
+          mode: "失败修复",
+          finalFeature: "对失败样本修复最直接，鲁棒性提升明显。",
+          bestFor: "已有明确坏 case，需要降低误触发或修复稳定性缺陷。",
+          rounds: [
+            {
+              label: "Round 0",
+              score: { total: 61, trigger: 58, execution: 62, stability: 60 },
+              actions: ["把三个失败 case 标记为抗原。", "当前文本对误触发和缺失信息没有防御能力。"],
+              conclusion: "免疫式优化从问题出发，不先追求整体重写。",
+              text: originalSkill,
+            },
+            {
+              label: "Round 1",
+              score: { total: 76, trigger: 84, execution: 70, stability: 74 },
+              actions: ["针对误触发抗原克隆候选。", "加入 when not to use，拦截背景式会议提及。"],
+              conclusion: "第一轮直接修最痛的失败点：不该触发的时候别触发。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user explicitly asks to summarize meeting content or extract decisions and action items.
+---
+
+When not to use:
+- Do not use when the user merely mentions that a meeting happened.
+- Do not use when the task is to schedule, join, or book a meeting.
+
+Summarize the meeting and list action items.`,
+            },
+            {
+              label: "Round 2",
+              score: { total: 86, trigger: 87, execution: 85, stability: 86 },
+              actions: ["针对漏字段抗原克隆候选。", "增加结构化 output 和 missing information 字段。"],
+              conclusion: "第二轮把失败 case 映射成明确字段，减少评测中的漏项。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user explicitly asks to summarize meeting content or extract decisions and action items.
+---
+
+When not to use:
+- Do not use when the user merely mentions that a meeting happened.
+- Do not use when the task is to schedule, join, or book a meeting.
+
+Workflow:
+1. Extract summary, decisions, action items, and open questions.
+2. For each action item, identify owner, task, deadline, and evidence.
+3. Put unavailable details in missing_information.
+
+Output:
+- summary
+- decisions
+- action_items
+- open_questions
+- missing_information`,
+            },
+            {
+              label: "Round 3",
+              score: { total: 92, trigger: 92, execution: 91, stability: 93 },
+              actions: ["针对编造信息抗原做最后变异。", "清除与高分版本过于相似但无新增收益的克隆。"],
+              conclusion: "最终版本特别擅长处理失败场景，鲁棒性是六种算法里最突出的一类。",
+              text: `---
+name: meeting-summary
+description: Use this skill when the user explicitly asks to summarize meeting content or extract decisions, action items, or follow-up questions from meeting notes, transcripts, or discussion records.
+---
+
+When to use:
+- The user asks for meeting minutes, recap, decisions, or action items.
+- The user provides meeting content or asks to process a transcript-like record.
+
+When not to use:
+- Do not use when the user merely mentions that a meeting happened.
+- Do not use when the task is to schedule, join, or book a meeting.
+
+Workflow:
+1. Extract summary, decisions, action items, and open questions.
+2. For each action item, identify owner, task, deadline, and evidence.
+3. Mark unavailable owner, deadline, or evidence as missing instead of inventing it.
+4. If the source is too thin, state what information is needed before producing a complete summary.
+
+Output:
+- summary
+- decisions
+- action_items: owner, task, deadline, evidence
+- open_questions
+- missing_information`,
+            },
+          ],
+        },
+        {
+          id: "annealing",
+          name: "模拟退火",
+          short: "高温探索，低温收敛",
+          title: "模拟退火：早期大胆重构，后期小步精修",
+          subtitle: "温度高时允许大改和短期降分，温度低时只做稳定收敛。",
+          idea:
+            "模拟退火用温度控制改写幅度。高温阶段允许大块重构甚至接受短期变差；随着温度下降，修改范围缩小，最终只做措辞、边界和稳定性微调。",
+          mode: "温度收敛",
+          finalFeature: "早期 diff 很大，后期 diff 很小，适合跳出差结构。",
+          bestFor: "原始 skill 结构很差，需要先重构再精修。",
+          rounds: [
+            {
+              label: "Round 0",
+              score: { total: 61, trigger: 58, execution: 62, stability: 60 },
+              actions: ["温度最高，允许大幅改写。", "原始文本结构过短，局部修补收益有限。"],
+              conclusion: "模拟退火认为此时需要跳出原结构，而不是只改几个词。",
+              text: originalSkill,
+            },
+            {
+              label: "Round 1",
+              score: { total: 69, trigger: 72, execution: 68, stability: 67 },
+              actions: ["高温阶段重排整个 skill.md 结构。", "接受一个分数不算最高但结构潜力更大的版本。"],
+              conclusion: "第一轮变化最大，像是把草稿改成正式模板。",
+              text: `---
+name: meeting-summary
+description: Create structured meeting notes from meeting-related source material.
+---
+
+Use this skill for:
+- meeting transcript
+- meeting notes
+- decisions
+- follow-up tasks
+
+Process:
+1. Read the source.
+2. Extract important points.
+3. Produce structured meeting notes.`,
+            },
+            {
+              label: "Round 2",
+              score: { total: 83, trigger: 83, execution: 85, stability: 81 },
+              actions: ["中温阶段只重写关键段落，不再推翻整体结构。", "补充 output format 和 guardrails。"],
+              conclusion: "温度下降后，修改从大块重构变成局部增强。",
+              text: `---
+name: meeting-summary
+description: Create structured meeting notes from meeting transcripts, notes, agendas, or discussion records when the user asks for a recap, decisions, or follow-up tasks.
+---
+
+Use this skill for:
+- meeting transcript
+- meeting notes
+- decisions
+- follow-up tasks
+
+Do not use this skill for scheduling or joining meetings.
+
+Process:
+1. Read the source.
+2. Extract topic, key points, decisions, action items, and open questions.
+3. Do not invent missing owner or deadline details.
+
+Output:
+- Summary
+- Decisions
+- Action items
+- Open questions`,
+            },
+            {
+              label: "Round 3",
+              score: { total: 89, trigger: 88, execution: 90, stability: 89 },
+              actions: ["低温阶段只做小步精修。", "补充最小必要的边界说明和 missing information 字段。"],
+              conclusion: "最终文本保留重构后的骨架，只做少量稳定性收敛。",
+              text: `---
+name: meeting-summary
+description: Create structured meeting notes from meeting transcripts, notes, agendas, or discussion records when the user asks for a recap, decisions, or follow-up tasks.
+---
+
+Use this skill for:
+- meeting transcripts or notes
+- meeting minutes or recaps
+- decisions and follow-up tasks
+
+Do not use this skill for:
+- scheduling or joining meetings
+- cases where a meeting is only background context
+
+Process:
+1. Read the source.
+2. Extract topic, key points, decisions, action items, and open questions.
+3. Do not invent missing owner or deadline details.
+4. Put unavailable details under missing information.
+
+Output:
+- Summary
+- Decisions
+- Action items: owner, task, deadline
+- Open questions
+- Missing information`,
+            },
+          ],
+        },
+      ];
+
+      const translationPairs = [
+        ["遗传算法", "Genetic Algorithm"],
+        ["选择、交叉、变异", "Selection, crossover, mutation"],
+        ["把 skill.md 拆成基因片段，组合高分候选的优点。", "Split skill.md into genes and combine the strongest candidate chunks."],
+        ["遗传算法把 skill.md 看成一个文本个体，把 description、workflow、output format、guardrails 看成基因片段。每轮保留高分片段，交叉组合，再做小范围变异。", "Genetic optimization treats skill.md as a text organism and treats description, workflow, output format, and guardrails as genes. Each round keeps high-scoring chunks, crosses them over, then applies small mutations."],
+        ["片段交叉", "Chunk crossover"],
+        ["组合多个候选的优秀片段，结构完整度提升最明显。", "Combines strong chunks from multiple candidates and improves structural completeness most clearly."],
+        ["需要同时优化触发、流程和输出格式的通用 skill。", "Best for general skills that must improve triggering, workflow, and output format together."],
+        ["保留原始 skill，作为所有候选的共同祖先。", "Keep the original skill as the shared ancestor for every candidate."],
+        ["识别可进化片段：description、workflow、output、guardrails。", "Identify evolvable chunks: description, workflow, output, and guardrails."],
+        ["当前文本太短，只能模糊触发，执行结果也很难稳定评测。", "The current text is too short, so triggering is vague and execution is hard to evaluate consistently."],
+        ["生成三个候选：强触发版、流程版、输出格式版。", "Generate three candidates: trigger-focused, workflow-focused, and output-format-focused."],
+        ["选择触发更准确的 description 片段进入下一代。", "Select the more accurate description chunk for the next generation."],
+        ["第一轮先让 skill 更容易在正确会议纪要请求中被触发。", "Round 1 first makes the skill easier to trigger for the right meeting-summary requests."],
+        ["交叉组合高分候选中的 workflow 和 output format。", "Crossover the workflow and output format from high-scoring candidates."],
+        ["变异出更细的行动项字段：owner、deadline、evidence。", "Mutate finer action-item fields: owner, deadline, and evidence."],
+        ["第二轮把执行路径补完整，输出变得可检查、可比较。", "Round 2 completes the execution path and makes output easier to inspect and compare."],
+        ["淘汰冗余候选，保留结构最完整的文本。", "Remove redundant candidates and keep the most complete text structure."],
+        ["增加 failure handling，避免缺失信息时编造负责人或截止时间。", "Add failure handling so missing owners or deadlines are not invented."],
+        ["最终版本像是从多个候选中拼出最强组合，优点集中但变化幅度中等。", "The final version feels like the strongest combination assembled from several candidates: concentrated strengths with moderate change size."],
+        ["粒子群优化", "Particle Swarm Optimization"],
+        ["个体最好 + 全局最好", "pBest + gBest"],
+        ["完整 skill.md 粒子在文本空间收敛", "complete skill.md particles converge through text space"],
+        ["每个粒子都是一个完整候选 skill.md，description/workflow/output 等 chunk 是它的位置维度。", "Each particle is a complete candidate skill.md; description, workflow, output, and related chunks are its position dimensions."],
+        ["粒子群优化把每个完整候选 skill.md 看作一个粒子，把 description、workflow、output、guardrails 等 chunk 看作坐标维度。每个粒子保留自己的 pBest，同时参考全局 gBest，逐步吸收更好的文本维度。", "Particle swarm optimization treats every complete candidate skill.md as a particle, with chunks such as description, workflow, output, and guardrails as coordinate dimensions. Each particle keeps its own pBest while referencing the global gBest and gradually absorbing stronger text dimensions."],
+        ["平滑收敛", "Smooth convergence"],
+        ["每轮变化稳定，逐渐向综合最优文本靠拢。", "Changes are stable each round and gradually approach the best overall text."],
+        ["已有基础质量、希望稳步提升且避免大幅重写的 skill。", "Best for skills that already have baseline quality and need steady improvement without large rewrites."],
+        ["初始化多个完整 skill.md 粒子：触发导向、执行导向、鲁棒性导向。", "Initialize multiple complete skill.md particles: trigger-focused, execution-focused, and robustness-focused."],
+        ["把 description、workflow、output 等 chunk 作为粒子的坐标维度。", "Use chunks such as description, workflow, and output as particle coordinate dimensions."],
+        ["每个粒子都能独立评测打分，起点还没有明确的全局最佳方向。", "Each particle can be evaluated independently, and the starting point has no clear global best direction yet."],
+        ["触发导向粒子更新 description 维度。", "The trigger-focused particle updates the description dimension."],
+        ["执行导向粒子更新 workflow 维度，分别形成自己的 pBest。", "The execution-focused particle updates the workflow dimension, and each particle forms its own pBest."],
+        ["每个完整文件粒子都有自己的得分和 pBest，变化不大但方向明确。", "Each complete-file particle has its own score and pBest; the edits are small but directionally clear."],
+        ["部分粒子吸收自身 pBest 的 description/workflow 坐标。", "Some particles absorb their own pBest description/workflow coordinates."],
+        ["全局最佳 gBest 出现后，其他完整文件粒子开始向它靠拢。", "After a global gBest emerges, the other complete-file particles begin moving toward it."],
+        ["粒子群是在完整 skill.md 文件之间移动，不是把单个 chunk 当成粒子。", "The swarm moves complete skill.md files; individual chunks are dimensions, not particles."],
+        ["候选文件粒子向 gBest 收敛，只做小幅坐标更新。", "Candidate-file particles converge toward gBest with small coordinate updates."],
+        ["补充 examples 维度，帮助触发边界稳定。", "Add an examples dimension to stabilize trigger boundaries."],
+        ["最终文本提升稳定，diff 比遗传算法小，更像完整文件在文本空间里一步步调参。", "The final improvement is stable, with a smaller diff than genetic optimization, like tuning complete files step by step through text space."],
+        ["蚁群优化", "Ant Colony Optimization"],
+        ["信息素强化有效修改路径", "Pheromone-reinforced edit paths"],
+        ["强化高收益修改路径", "reinforcing high-yield edit paths"],
+        ["把修改动作看成路径，评测好的路径会留下更强信息素。", "Treat edit actions as paths; high-scoring paths leave stronger pheromones."],
+        ["蚁群优化不只关心最终文本，也关心修改动作路径。若增加 negative examples 能降低误触发，这条路径的信息素增强，后续轮次会更倾向继续走这类编辑动作。", "Ant colony optimization cares about the edit path, not only the final text. If adding negative examples reduces false triggers, that path receives stronger pheromones and later rounds prefer similar edits."],
+        ["路径强化", "Path reinforcement"],
+        ["能解释哪条修改路径最有效，优化过程可追踪。", "Explains which edit path works best, making the optimization process traceable."],
+        ["需要理解优化因果、展示每类编辑动作收益的 skill。", "Best for skills where users need to understand optimization causality and the gain from each edit action."],
+        ["人工蜂群", "Artificial Bee Colony"],
+        ["侦察、开发、观察选择", "Scout, exploit, observe"],
+        ["先探索多风格，再深挖强方向", "explore many styles, then exploit the strongest direction"],
+        ["侦察蜂发现不同写法，雇佣蜂局部优化，观察蜂选择收益最高方向。", "Scout bees discover different writing styles, employed bees refine locally, and observer bees choose the highest-yield direction."],
+        ["人工蜂群把候选文本看成不同花源。侦察蜂寻找差异很大的写法，雇佣蜂围绕高收益写法继续细化，观察蜂根据评测收益选择下一轮投入。", "Artificial bee colony treats candidate texts as food sources. Scouts search for very different writing styles, employed bees refine high-yield sources, and observers choose where the next round should invest."],
+        ["探索再开发", "Explore then exploit"],
+        ["前期差异大，中后期围绕最好方向集中打磨。", "Produces large early differences, then concentrates refinement around the best direction."],
+        ["不知道 skill 应该采用哪种文本风格时，先探索再收敛。", "Best when the right text style is unclear and the system should explore before converging."],
+        ["免疫克隆选择", "Immune Clonal Selection"],
+        ["围绕失败 case 精准修复", "Targeted repair around failed cases"],
+        ["把失败 case 当作抗原", "treat failed cases as antigens"],
+        ["克隆高分候选，针对误触发、漏字段、编造信息做定向变异。", "Clone high-scoring candidates and apply targeted mutations for false triggers, missing fields, and fabricated information."],
+        ["免疫克隆选择以失败 case 为中心。每个失败样本都是抗原，系统克隆表现较好的 skill 候选，并对克隆体做高频微调；通过测试的保留，重复或无效的清除。", "Immune clonal selection centers on failed cases. Each failed sample is an antigen; the system clones better-performing skill candidates, mutates the clones frequently, keeps those that pass, and removes duplicate or ineffective variants."],
+        ["失败修复", "Failure repair"],
+        ["对失败样本修复最直接，鲁棒性提升明显。", "Most directly repairs failed samples and improves robustness clearly."],
+        ["已有明确坏 case，需要降低误触发或修复稳定性缺陷。", "Best when clear bad cases exist and the goal is reducing false triggers or fixing robustness defects."],
+        ["模拟退火", "Simulated Annealing"],
+        ["高温探索，低温收敛", "High-temperature exploration, low-temperature convergence"],
+        ["早期大胆重构，后期小步精修", "bold early restructuring, small late refinements"],
+        ["温度高时允许大改和短期降分，温度低时只做稳定收敛。", "At high temperature, large edits and short-term score drops are allowed; at low temperature, only stable convergence edits remain."],
+        ["模拟退火用温度控制改写幅度。高温阶段允许大块重构甚至接受短期变差；随着温度下降，修改范围缩小，最终只做措辞、边界和稳定性微调。", "Simulated annealing uses temperature to control rewrite size. High temperature allows large restructuring and even short-term regressions; as temperature drops, edit scope shrinks into wording, boundary, and stability refinements."],
+        ["温度收敛", "Temperature convergence"],
+        ["早期 diff 很大，后期 diff 很小，适合跳出差结构。", "Large early diffs and small late diffs, useful for escaping a weak structure."],
+        ["原始 skill 结构很差，需要先重构再精修。", "Best when the original skill structure is weak and should be rebuilt before refinement."],
+        ["共同祖先", "Shared ancestor"],
+        ["原始 skill，没有交叉或变异。", "Original skill, with no crossover or mutation yet."],
+        ["作为后续所有候选文件的父文件。", "Parent file for every later candidate."],
+        ["description 变异", "description mutation"],
+        ["保留原始执行句，只改 description，让触发意图更明确。", "Keep the original execution sentence and only change description to clarify trigger intent."],
+        ["触发准确性最高，被选为下一代 description 基因。", "Highest trigger accuracy, selected as the next-generation description gene."],
+        ["workflow 变异", "workflow mutation"],
+        ["保留原始 description，新增执行步骤。", "Keep the original description and add execution steps."],
+        ["执行质量有提升，但触发边界仍然含糊。", "Execution quality improves, but trigger boundaries remain vague."],
+        ["output 变异", "output mutation"],
+        ["保留原始 description，新增可评测输出字段。", "Keep the original description and add evaluable output fields."],
+        ["输出更清楚，但还不知道什么时候不该触发。", "Output is clearer, but non-trigger cases are still unclear."],
+        ["交叉：A.description + B.workflow", "Crossover: A.description + B.workflow"],
+        ["从 A 继承触发描述，从 B 继承执行步骤。", "Inherit trigger description from A and execution steps from B."],
+        ["触发和执行都提升，但输出字段还不够可评测。", "Triggering and execution both improve, but output fields are not evaluable enough."],
+        ["交叉：A.description + B.workflow + C.output", "Crossover: A.description + B.workflow + C.output"],
+        ["从 A 继承 description，从 B 继承 workflow，从 C 继承 output format。", "Inherit description from A, workflow from B, and output format from C."],
+        ["三个高分片段同时保留，output chunk 变异出 owner、deadline、evidence 字段。", "Keep three high-scoring chunks while mutating the output chunk with owner, deadline, and evidence fields."],
+        ["局部变异", "Local mutation"],
+        ["在行动项字段上高频变异。", "Apply frequent mutations to action-item fields."],
+        ["output chunk 更细，但 instruction 仍沿用原始短指令。", "The output chunk is more detailed, but the instruction still uses the original short sentence."],
+        ["最终保留个体", "Final survivor"],
+        ["继承 Round 2 的完整结构，再增加 failure handling。", "Inherit the complete Round 2 structure and add failure handling."],
+        ["综合分最高，保留为最终候选。", "Highest overall score, kept as the final candidate."],
+        ["压缩变异", "Compression mutation"],
+        ["保留 Round 2 主结构，只加入最小 failure handling。", "Keep the main Round 2 structure and add minimal failure handling."],
+        ["更短，但稳定性下降。", "Shorter, but less stable."],
+        ["变异 chunk", "Mutate chunk"],
+        ["新增 chunk", "Add chunk"],
+        ["字段变异", "field mutation"],
+        ["output 变异", "output mutation"],
+        ["新增 guardrails/failure", "Add guardrails/failure"],
+        ["接受稳定版本", "Accept stable version"],
+        ["完整 skill.md · gBest", "Full skill.md · gBest"],
+        ["完整 skill.md · pBest", "Full skill.md · pBest"],
+        ["完整 skill.md · 种子", "Full skill.md · seed"],
+        ["原始 skill.md · 种子位置", "Original skill.md · seed position"],
+        ["Round 0 只有原始 skill.md，还没有形成多粒子群。", "Round 0 has only the original skill.md; no swarm has formed yet."],
+        ["起点文件，只有 description 和 instruction 两个坐标维度。", "Starting file with only description and instruction coordinate dimensions."],
+        ["粒子 A · 关注 description", "Particle A · description focus"],
+        ["粒子 B · 关注 workflow/output", "Particle B · workflow/output focus"],
+        ["粒子 C · 关注 guardrails", "Particle C · guardrails focus"],
+        ["从原始文件构造出的完整 skill.md，主要移动 description 维度。", "A complete skill.md derived from the original file, mainly moving the description dimension."],
+        ["从原始文件构造出的完整 skill.md，主要移动 workflow 和 output 维度。", "A complete skill.md derived from the original file, mainly moving the workflow and output dimensions."],
+        ["从原始文件构造出的完整 skill.md，主要移动 guardrails 维度。", "A complete skill.md derived from the original file, mainly moving the guardrails dimension."],
+        ["Round 1 独立评测后成为触发方向 pBest。", "After Round 1 independent evaluation, it becomes the trigger-direction pBest."],
+        ["Round 1 独立评测后成为执行方向 pBest。", "After Round 1 independent evaluation, it becomes the execution-direction pBest."],
+        ["Round 1 当前最高分，成为 gBest。", "Highest current Round 1 score, becoming gBest."],
+        ["粒子 A · 向 gBest 移动", "Particle A · moving toward gBest"],
+        ["粒子 B · 向 gBest 移动", "Particle B · moving toward gBest"],
+        ["粒子 C · 沿 gBest 强化", "Particle C · reinforcing along gBest"],
+        ["粒子 A 保留 pBest.description，同时吸收 gBest.guardrails。", "Particle A keeps pBest.description while absorbing gBest.guardrails."],
+        ["粒子 B 保留 pBest.workflow，同时吸收 gBest.description。", "Particle B keeps pBest.workflow while absorbing gBest.description."],
+        ["粒子 C 保留 gBest.guardrails，并吸收 workflow/output 坐标。", "Particle C keeps gBest.guardrails and absorbs workflow/output coordinates."],
+        ["这是同一个完整文件粒子的 Round 2 新位置。", "This is the Round 2 new position of the same complete-file particle."],
+        ["Round 2 当前最高分，成为新的 gBest。", "Highest current Round 2 score, becoming the new gBest."],
+        ["粒子 A · 继续靠近 gBest", "Particle A · continuing toward gBest"],
+        ["粒子 B · 继续靠近 gBest", "Particle B · continuing toward gBest"],
+        ["粒子 C · 收敛 gBest", "Particle C · converged gBest"],
+        ["粒子 A 补充 output/failure handling，靠近全局最佳区域。", "Particle A adds output/failure handling and moves closer to the global-best area."],
+        ["仍保留自己的强触发 pBest 特征。", "Still retains its strong trigger-focused pBest traits."],
+        ["粒子 B 保留 workflow 优势，并补齐 guardrails/output。", "Particle B keeps its workflow advantage and fills in guardrails/output."],
+        ["执行方向粒子接近最终最优。", "The execution-focused particle approaches the final optimum."],
+        ["粒子 C 作为当前 gBest，补充 examples 维度稳定触发边界。", "Particle C, as the current gBest, adds examples to stabilize trigger boundaries."],
+        ["最终版本是全局最佳完整 skill.md，不是单个 chunk。", "The final version is the global-best complete skill.md, not a single chunk."],
+        ["初始化", "Initialize"],
+        ["移动", "Move"],
+        ["收敛", "Converge"],
+        ["回调", "backfill"],
+        ["路径起点", "Path start"],
+        ["蚁群从原始文本出发，探索不同编辑路径。", "The colony starts from the original text and explores different edit paths."],
+        ["起点文件。", "Starting file."],
+        ["路径：改 description", "Path: edit description"],
+        ["改 description 路径留下第一层信息素。", "The edit-description path leaves the first pheromone layer."],
+        ["触发相关 case 有收益，但误触发还需要边界。", "Trigger-related cases improve, but false triggers still need boundaries."],
+        ["路径：加 guardrails", "Path: add guardrails"],
+        ["negative examples 路径信息素增强。", "The negative-examples path receives stronger pheromones."],
+        ["这条路径降低背景式会议提及误触发。", "This path reduces false triggers from meeting mentions used only as background."],
+        ["路径：补 output", "Path: add output"],
+        ["执行评测显示 output schema 路径收益高。", "Execution evaluation shows high gain from the output-schema path."],
+        ["路径从触发边界转向输出结构。", "The path shifts from trigger boundaries toward output structure."],
+        ["主信息素路径", "Main pheromone path"],
+        ["最终主路径为 description -> guardrails -> output -> missing information。", "The final main path is description -> guardrails -> output -> missing information."],
+        ["过程可解释，用户能看到哪类编辑动作被强化。", "The process is explainable: users can see which edit actions were reinforced."],
+        ["信息素 +description", "Pheromone +description"],
+        ["误触发下降", "False triggers down"],
+        ["执行收益", "Execution gain"],
+        ["主路径强化", "Main path reinforced"],
+        ["补 missing information", "Add missing information"],
+        ["初始花源", "Initial food source"],
+        ["蜂群把原始 skill 看成贫瘠花源。", "The bee colony treats the original skill as a low-yield food source."],
+        ["需要侦察不同文本风格。", "It needs scouts to explore different text styles."],
+        ["侦察蜂：强触发", "Scout bee: strong trigger"],
+        ["侦察蜂：强流程", "Scout bee: strong workflow"],
+        ["侦察蜂：强输出", "Scout bee: strong output"],
+        ["侦察强触发写法。", "Scout a strong-trigger writing style."],
+        ["侦察强流程写法。", "Scout a strong-workflow writing style."],
+        ["侦察强输出格式。", "Scout a strong-output format."],
+        ["探索 description 的收益。", "Explore the gain from description."],
+        ["强流程花源整体收益更均衡。", "The strong-workflow source has the most balanced gain."],
+        ["输出更清楚，但触发边界不足。", "Output is clearer, but trigger boundaries are weak."],
+        ["雇佣蜂开发", "Employed bee exploitation"],
+        ["围绕强流程花源做局部开发。", "Locally exploit the strong-workflow food source."],
+        ["补上 guardrails 和 failure handling。", "Add guardrails and failure handling."],
+        ["观察蜂选择", "Observer bee selection"],
+        ["观察蜂确认强流程花源收益最高，继续补 examples。", "Observer bees confirm the strong-workflow source has the highest gain and continue adding examples."],
+        ["最终版本均衡且泛化更好。", "The final version is balanced and generalizes better."],
+        ["侦察", "Scout"],
+        ["雇佣蜂深挖强流程", "Employed bees exploit strong workflow"],
+        ["吸收 description", "Absorb description"],
+        ["观察蜂选择高收益花源", "Observer bees select high-yield source"],
+        ["未免疫个体", "Unimmunized individual"],
+        ["原始文本会被失败 case 攻击。", "The original text is vulnerable to failed cases."],
+        ["缺少对误触发、漏字段和编造信息的防御。", "It lacks defenses against false triggers, missing fields, and fabricated information."],
+        ["克隆体：修误触发", "Clone: fix false trigger"],
+        ["克隆体：修漏字段", "Clone: fix missing field"],
+        ["克隆体：修编造", "Clone: fix fabrication"],
+        ["抗原：用户只是说昨天开会。", "Antigen: the user only says they had a meeting yesterday."],
+        ["抗原：action item 没有 owner。", "Antigen: an action item has no owner."],
+        ["抗原：transcript 没有 deadline。", "Antigen: the transcript has no deadline."],
+        ["克隆体加入 guardrails 阻断误触发。", "The clone adds guardrails to block false triggers."],
+        ["克隆体加入 workflow 和 output 字段。", "The clone adds workflow and output fields."],
+        ["克隆体加入 failure handling。", "The clone adds failure handling."],
+        ["通过选择的克隆体", "Selected passing clone"],
+        ["通过三个失败 case 后保留。", "Kept after passing three failed cases."],
+        ["最终版本围绕失败样本形成强鲁棒性。", "The final version builds strong robustness around failed samples."],
+        ["抗原", "Antigen"],
+        ["误触发", "false trigger"],
+        ["漏字段", "missing field"],
+        ["编造", "fabrication"],
+        ["通过字段 case", "Pass field case"],
+        ["通过缺失信息 case", "Pass missing-information case"],
+        ["高温起点", "High-temperature start"],
+        ["温度最高，允许跳出原始短文本。", "Temperature is highest, allowing a jump away from the short original text."],
+        ["局部修补收益有限。", "Local patching has limited gain."],
+        ["高温大改", "High-temperature rewrite"],
+        ["接受大幅重构，即使短期分数不最高。", "Accept a large restructuring even if its short-term score is not highest."],
+        ["一次性替换 description 和 workflow 骨架。", "Replace the description and workflow skeleton in one step."],
+        ["中温局部增强", "Medium-temperature local enhancement"],
+        ["温度下降后，不再推翻结构，只补边界和字段。", "After temperature drops, keep the structure and only add boundaries and fields."],
+        ["局部加入 guardrails、outputDetailed。", "Locally add guardrails and outputDetailed."],
+        ["低温精修", "Low-temperature refinement"],
+        ["低温阶段只做稳定性小改。", "At low temperature, apply only small stability edits."],
+        ["加入 failure handling，不再大面积重排。", "Add failure handling without broad rearrangement."],
+        ["稳定收敛", "Stable convergence"],
+        ["最终只保留低温后收益稳定的文本。", "Keep only the text whose gain remains stable after cooling."],
+        ["早期大改、后期微调的轨迹非常清楚。", "The trace is clear: large early rewrite, then late fine-tuning."],
+        ["高温", "High temperature"],
+        ["重写", "Rewrite"],
+        ["中温", "Medium temperature"],
+        ["补", "Add"],
+        ["低温", "Low temperature"],
+        ["加 failure handling", "Add failure handling"],
+        ["主Path reinforcement", "Main path reinforcement"],
+        ["Observer bee selection高收益花源", "Observer bees select high-yield food source"],
+        ["稳定Converge", "Stable convergence"],
+        ["温度Converge", "Temperature convergence"],
+        ["变异", "mutation"],
+        ["字段", "fields"],
+        ["强流程", "strong workflow"],
+        ["：", ": "],
+        ["；", "; "],
+        ["。", "."],
+        ["，", ", "],
+        ["、", ", "],
+        ["“", "\""],
+        ["”", "\""],
+      ];
+
+      function translateText(value) {
+        if (typeof value !== "string") return value;
+        if (currentLanguage === "zh") return value;
+        return translationPairs.reduce((text, [from, to]) => text.replaceAll(from, to), value);
+      }
+
+      function translateObject(value) {
+        if (Array.isArray(value)) {
+          value.forEach((item, index) => {
+            value[index] = translateObject(item);
+          });
+          return value;
+        }
+        if (value && typeof value === "object") {
+          Object.keys(value).forEach((key) => {
+            value[key] = translateObject(value[key]);
+          });
+          return value;
+        }
+        return translateText(value);
+      }
+
+      if (currentLanguage === "en") translateObject(algorithms);
+
+      let currentAlgorithm = algorithms[0];
+      let currentRound = 0;
+      let selectedCandidateId = null;
+      let playTimer = null;
+      let canvasDragState = null;
+      let suppressCanvasClick = false;
+      let nodeDragState = null;
+      let detailOpen = false;
+      let diffBaseId = "origin";
+      const dragThreshold = 10;
+      const nodeOffsets = new Map();
+      const graphNodeSize = { width: 188, height: 176 };
+      const stageRightSlack = 520;
+      const geneticStageSize = { width: 1060, height: 1260 };
+      const geneticBasePositions = {
+        "genetic-r0-origin": [720, 48],
+        "genetic-r1-trigger": [260, 320],
+        "genetic-r1-workflow": [720, 320],
+        "genetic-r1-output": [1180, 320],
+        "genetic-r2-cross-a-b": [320, 710],
+        "genetic-r2-cross-a-b-c": [720, 710],
+        "genetic-r2-mutation": [1120, 710],
+        "genetic-r3-final": [560, 1080],
+        "genetic-r3-lean": [900, 1080],
+      };
+
+      const byId = (id) => document.getElementById(id);
+
+      function nodeOffsetKey(candidateId) {
+        return `${currentAlgorithm.id}:${candidateId}`;
+      }
+
+      function getNodeOffset(candidateId) {
+        return nodeOffsets.get(nodeOffsetKey(candidateId)) || { x: 0, y: 0 };
+      }
+
+      function setNodeOffset(candidateId, offset) {
+        nodeOffsets.set(nodeOffsetKey(candidateId), offset);
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function getStageWidth(baseWidth) {
+        const canvas = byId("animationCanvas");
+        if (!canvas) return Math.max(baseWidth, 1500);
+        const style = getComputedStyle(canvas);
+        const visibleContentWidth =
+          canvas.getBoundingClientRect().width -
+          Number.parseFloat(style.paddingLeft || 0) -
+          Number.parseFloat(style.paddingRight || 0);
+        return Math.ceil(Math.max(baseWidth, 1500, visibleContentWidth + stageRightSlack));
+      }
+
+      function getGeneticStageSize() {
+        return {
+          width: getStageWidth(geneticStageSize.width),
+          height: geneticStageSize.height,
+        };
+      }
+
+      function getEvolutionStageSize(map) {
+        return {
+          width: getStageWidth(map.width),
+          height: map.height,
+        };
+      }
+
+      function clampGeneticOffset(candidateId, offset) {
+        const base = geneticBasePositions[candidateId];
+        if (!base) return offset;
+        const stageSize = getGeneticStageSize();
+        const horizontalPadding = graphNodeSize.width / 2 + 24;
+        const safeX = clamp(base[0] + offset.x, horizontalPadding, stageSize.width - horizontalPadding);
+        const safeY = clamp(base[1] + offset.y, 24, stageSize.height - graphNodeSize.height - 24);
+        return { x: safeX - base[0], y: safeY - base[1] };
+      }
+
+      function clampEvolutionOffset(candidateId, offset) {
+        const map = evolutionMaps[currentAlgorithm.id];
+        const base = map?.positions[candidateId];
+        if (!map || !base) return offset;
+        const stageSize = getEvolutionStageSize(map);
+        const horizontalPadding = graphNodeSize.width / 2 + 24;
+        const safeX = clamp(base[0] + offset.x, horizontalPadding, stageSize.width - horizontalPadding);
+        const safeY = clamp(base[1] + offset.y, 24, stageSize.height - graphNodeSize.height - 24);
+        return { x: safeX - base[0], y: safeY - base[1] };
+      }
+
+      function nodeRectAt(position) {
+        const [x, y] = position;
+        return {
+          bottom: y + graphNodeSize.height,
+          centerX: x,
+          centerY: y + graphNodeSize.height / 2,
+          left: x - graphNodeSize.width / 2,
+          right: x + graphNodeSize.width / 2,
+          top: y,
+        };
+      }
+
+      function anchorOnRectEdge(sourceRect, targetRect) {
+        const dx = targetRect.centerX - sourceRect.centerX;
+        const dy = targetRect.centerY - sourceRect.centerY;
+        const halfWidth = graphNodeSize.width / 2;
+        const halfHeight = graphNodeSize.height / 2;
+        if (Math.abs(dx) / halfWidth > Math.abs(dy) / halfHeight) {
+          const side = dx >= 0 ? 1 : -1;
+          return {
+            x: sourceRect.centerX + side * halfWidth,
+            y: sourceRect.centerY + (dy / Math.max(Math.abs(dx), 1)) * halfWidth,
+          };
+        }
+        const side = dy >= 0 ? 1 : -1;
+        return {
+          x: sourceRect.centerX + (dx / Math.max(Math.abs(dy), 1)) * halfHeight,
+          y: sourceRect.centerY + side * halfHeight,
+        };
+      }
+
+      function edgeGeometry(positions, from, to, labelDx = 0, labelDy = 0) {
+        const startRect = nodeRectAt(positions[from]);
+        const endRect = nodeRectAt(positions[to]);
+        const start = anchorOnRectEdge(startRect, endRect);
+        const end = anchorOnRectEdge(endRect, startRect);
+        const horizontal = Math.abs(end.x - start.x) > Math.abs(end.y - start.y);
+        const c1 = horizontal
+          ? { x: start.x + (end.x - start.x) * 0.45, y: start.y }
+          : { x: start.x, y: start.y + (end.y - start.y) * 0.45 };
+        const c2 = horizontal
+          ? { x: start.x + (end.x - start.x) * 0.55, y: end.y }
+          : { x: end.x, y: start.y + (end.y - start.y) * 0.55 };
+        return {
+          d: `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} C ${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,
+          label: {
+            x: (start.x + end.x) / 2 + labelDx,
+            y: (start.y + end.y) / 2 + labelDy,
+          },
+        };
+      }
+
+      function directionGeometry(positions, from, dx, dy) {
+        const startRect = nodeRectAt(positions[from]);
+        const targetRect = {
+          centerX: positions[from][0] + dx,
+          centerY: positions[from][1] + graphNodeSize.height / 2 + dy,
+        };
+        const start = anchorOnRectEdge(startRect, targetRect);
+        const end = {
+          x: targetRect.centerX,
+          y: targetRect.centerY,
+        };
+        const horizontal = Math.abs(end.x - start.x) > Math.abs(end.y - start.y);
+        const c1 = horizontal
+          ? { x: start.x + (end.x - start.x) * 0.55, y: start.y }
+          : { x: start.x, y: start.y + (end.y - start.y) * 0.55 };
+        const c2 = horizontal
+          ? { x: start.x + (end.x - start.x) * 0.75, y: end.y }
+          : { x: end.x, y: start.y + (end.y - start.y) * 0.75 };
+        return {
+          d: `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} C ${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,
+          label: {
+            x: (start.x + end.x) / 2,
+            y: (start.y + end.y) / 2,
+          },
+        };
+      }
+
+      function escapeHtml(value) {
+        return value
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+
+      function createDiff(before, after, beforeLabel = "original/SKILL.md", afterLabel = "evolved/SKILL.md") {
+        const beforeLines = before.split("\n");
+        const afterLines = after.split("\n");
+        const max = Math.max(beforeLines.length, afterLines.length);
+        const lines = [`--- ${beforeLabel}`, `+++ ${afterLabel}`];
+        for (let index = 0; index < max; index += 1) {
+          const oldLine = beforeLines[index];
+          const newLine = afterLines[index];
+          if (oldLine === newLine) {
+            if (oldLine !== undefined) lines.push(` ${oldLine}`);
+          } else {
+            if (oldLine !== undefined) lines.push(`-${oldLine}`);
+            if (newLine !== undefined) lines.push(`+${newLine}`);
+          }
+        }
+        return lines
+          .map((line) => {
+            const cls = line.startsWith("+++") || line.startsWith("---")
+              ? "meta"
+              : line.startsWith("+")
+                ? "add"
+                : line.startsWith("-")
+                  ? "remove"
+                  : "";
+            return `<span class="diff-line ${cls}">${escapeHtml(line)}</span>`;
+          })
+          .join("");
+      }
+
+      function addSection(base, title, lines) {
+        return `${base}\n\n${title}:\n${lines.map((line) => `- ${line}`).join("\n")}`;
+      }
+
+      function getParentText(roundIndex) {
+        if (roundIndex === 0) return originalSkill;
+        return currentAlgorithm.rounds[roundIndex - 1].text;
+      }
+
+      function geneticCandidates(roundIndex) {
+        const round = currentAlgorithm.rounds[roundIndex];
+        const parent = getParentText(roundIndex);
+        if (roundIndex === 0) {
+          return [
+            {
+              id: "genetic-r0-origin",
+              name: "origin.skill.md",
+              role: "共同祖先",
+              score: 61,
+              source: "原始 skill，没有交叉或变异。",
+              why: "作为后续所有候选文件的父文件。",
+              chunks: chunkTypes(["descriptionOriginal", "instructionOriginal"]),
+              changedChunks: [],
+              text: buildSkillFromChunks(["descriptionOriginal", "instructionOriginal"]),
+              parentText: originalSkill,
+              chosen: true,
+            },
+          ];
+        }
+        if (roundIndex === 1) {
+          return [
+            {
+              id: "genetic-r1-trigger",
+              name: "candidate-A-trigger.skill.md",
+              role: "description 变异",
+              score: 73,
+              source: "保留原始执行句，只改 description，让触发意图更明确。",
+              why: "触发准确性最高，被选为下一代 description 基因。",
+              chunks: chunkTypes(["descriptionPrecise", "instructionOriginal"]),
+              changedChunks: ["description"],
+              text: buildSkillFromChunks(["descriptionPrecise", "instructionOriginal"]),
+              parentText: parent,
+              genes: ["description"],
+              chosen: true,
+            },
+            {
+              id: "genetic-r1-workflow",
+              name: "candidate-B-workflow.skill.md",
+              role: "workflow 变异",
+              score: 69,
+              source: "保留原始 description，新增执行步骤。",
+              why: "执行质量有提升，但触发边界仍然含糊。",
+              chunks: chunkTypes(["descriptionOriginal", "workflowBasic"]),
+              changedChunks: ["workflow"],
+              text: buildSkillFromChunks(["descriptionOriginal", "workflowBasic"]),
+              parentText: parent,
+              genes: ["workflow"],
+            },
+            {
+              id: "genetic-r1-output",
+              name: "candidate-C-output.skill.md",
+              role: "output 变异",
+              score: 68,
+              source: "保留原始 description，新增可评测输出字段。",
+              why: "输出更清楚，但还不知道什么时候不该触发。",
+              chunks: chunkTypes(["descriptionOriginal", "outputBasic"]),
+              changedChunks: ["output"],
+              text: buildSkillFromChunks(["descriptionOriginal", "outputBasic"]),
+              parentText: parent,
+              genes: ["output"],
+            },
+          ];
+        }
+        if (roundIndex === 2) {
+          return [
+            {
+              id: "genetic-r2-cross-a-b",
+              name: "cross-A-description-B-workflow.skill.md",
+              role: "交叉：A.description + B.workflow",
+              score: 80,
+              source: "从 A 继承触发描述，从 B 继承执行步骤。",
+              why: "触发和执行都提升，但输出字段还不够可评测。",
+              chunks: chunkTypes(["descriptionPrecise", "workflowBasic"]),
+              changedChunks: ["description", "workflow"],
+              text: buildSkillFromChunks(["descriptionPrecise", "workflowBasic"]),
+              parentText: parent,
+              genes: ["description", "workflow"],
+            },
+            {
+              id: "genetic-r2-cross-a-b-c",
+              name: "cross-A-B-C-selected.skill.md",
+              role: "交叉：A.description + B.workflow + C.output",
+              score: 84,
+              source: "从 A 继承 description，从 B 继承 workflow，从 C 继承 output format。",
+              why: "三个高分片段同时保留，output chunk 变异出 owner、deadline、evidence 字段。",
+              chunks: chunkTypes(["descriptionPrecise", "workflowStructured", "outputDetailed"]),
+              changedChunks: ["description", "workflow", "output"],
+              text: buildSkillFromChunks(["descriptionPrecise", "workflowStructured", "outputDetailed"]),
+              parentText: parent,
+              genes: ["description", "workflow", "output"],
+              chosen: true,
+            },
+            {
+              id: "genetic-r2-mutation",
+              name: "mutation-action-fields.skill.md",
+              role: "局部变异",
+              score: 81,
+              source: "在行动项字段上高频变异。",
+              why: "output chunk 更细，但 instruction 仍沿用原始短指令。",
+              chunks: chunkTypes(["descriptionPrecise", "instructionOriginal", "outputDetailed"]),
+              changedChunks: ["output"],
+              text: buildSkillFromChunks(["descriptionPrecise", "instructionOriginal", "outputDetailed"]),
+              parentText: parent,
+              genes: ["output"],
+            },
+          ];
+        }
+        return [
+          {
+            id: "genetic-r3-final",
+            name: "next-generation-final.skill.md",
+            role: "最终保留个体",
+            score: 90,
+            source: "继承 Round 2 的完整结构，再增加 failure handling。",
+            why: "综合分最高，保留为最终候选。",
+            chunks: chunkTypes(["descriptionFinal", "guardrails", "workflowStructured", "outputFinal", "failureHandling"]),
+            changedChunks: ["description", "guardrails", "output", "failureHandling"],
+            text: buildSkillFromChunks(["descriptionFinal", "guardrails", "workflowStructured", "outputFinal", "failureHandling"]),
+            parentText: parent,
+            genes: ["description", "guardrails", "workflow", "output", "failureHandling"],
+            chosen: true,
+          },
+          {
+            id: "genetic-r3-lean",
+            name: "lean-variant.skill.md",
+            role: "压缩变异",
+            score: 86,
+            source: "保留 Round 2 主结构，只加入最小 failure handling。",
+            why: "更短，但稳定性下降。",
+            chunks: chunkTypes(["descriptionPrecise", "workflowStructured", "outputFinal", "failureHandling"]),
+            changedChunks: ["output", "failureHandling"],
+            text: buildSkillFromChunks(["descriptionPrecise", "workflowStructured", "outputFinal", "failureHandling"]),
+            parentText: parent,
+            genes: ["output", "failureHandling"],
+          },
+        ];
+      }
+
+      function chunkCandidate(id, roundIndex, name, role, score, source, why, chunkIds, changedChunks, chosen = false) {
+        return {
+          id,
+          roundIndex,
+          name,
+          role,
+          score,
+          source,
+          why,
+          chunkIds,
+          chunks: chunkTypes(chunkIds),
+          changedChunks,
+          text: buildSkillFromChunks(chunkIds),
+          parentText: originalSkill,
+          chosen,
+        };
+      }
+
+      const evolutionMaps = {
+        pso: {
+          width: 900,
+          height: 980,
+          positions: {
+            "pso-origin": [180, 560],
+            "pso-r1-description": [560, 270],
+            "pso-r1-workflow": [760, 570],
+            "pso-r1-stability": [560, 850],
+            "pso-r2-description": [900, 210],
+            "pso-r2-workflow": [1080, 650],
+            "pso-r2-stability": [820, 730],
+            "pso-r3-description": [1160, 330],
+            "pso-r3-workflow": [1020, 500],
+            "pso-r3-gbest": [1320, 760],
+          },
+          nodes: [
+            { ...chunkCandidate("pso-origin", 0, "origin.skill.md", "原始 skill.md · 种子位置", 61, "Round 0 只有原始 skill.md，还没有形成多粒子群。", "起点文件，只有 description 和 instruction 两个坐标维度。", ["descriptionOriginal", "instructionOriginal"], [], true), particleState: "seed" },
+            { ...chunkCandidate("pso-r1-description", 1, "particle-A-description.skill.md", "粒子 A · 关注 description", 72, "从原始文件构造出的完整 skill.md，主要移动 description 维度。", "Round 1 独立评测后成为触发方向 pBest。", ["descriptionPrecise", "instructionOriginal"], ["description"], true), particleState: "pBest" },
+            { ...chunkCandidate("pso-r1-workflow", 1, "particle-B-workflow.skill.md", "粒子 B · 关注 workflow/output", 70, "从原始文件构造出的完整 skill.md，主要移动 workflow 和 output 维度。", "Round 1 独立评测后成为执行方向 pBest。", ["descriptionOriginal", "workflowBasic", "outputBasic"], ["workflow", "output"]), particleState: "pBest" },
+            { ...chunkCandidate("pso-r1-stability", 1, "particle-C-stability.skill.md", "粒子 C · 关注 guardrails", 76, "从原始文件构造出的完整 skill.md，主要移动 guardrails 维度。", "Round 1 当前最高分，成为 gBest。", ["descriptionPrecise", "guardrails", "instructionOriginal"], ["description", "guardrails"]), particleState: "gBest" },
+            { ...chunkCandidate("pso-r2-description", 2, "particle-A-moved.skill.md", "粒子 A · 向 gBest 移动", 80, "粒子 A 保留 pBest.description，同时吸收 gBest.guardrails。", "这是同一个完整文件粒子的 Round 2 新位置。", ["descriptionPrecise", "guardrails", "instructionOriginal"], ["guardrails"], true), particleState: "pBest" },
+            { ...chunkCandidate("pso-r2-workflow", 2, "particle-B-moved.skill.md", "粒子 B · 向 gBest 移动", 82, "粒子 B 保留 pBest.workflow，同时吸收 gBest.description。", "这是同一个完整文件粒子的 Round 2 新位置。", ["descriptionPrecise", "workflowStructured", "outputBasic"], ["description", "workflow"]), particleState: "pBest" },
+            { ...chunkCandidate("pso-r2-stability", 2, "particle-C-moved.skill.md", "粒子 C · 沿 gBest 强化", 85, "粒子 C 保留 gBest.guardrails，并吸收 workflow/output 坐标。", "Round 2 当前最高分，成为新的 gBest。", ["descriptionPrecise", "guardrails", "workflowStructured", "outputDetailed"], ["workflow", "output"], true), particleState: "gBest" },
+            { ...chunkCandidate("pso-r3-description", 3, "particle-A-converged.skill.md", "粒子 A · 继续靠近 gBest", 84, "粒子 A 补充 output/failure handling，靠近全局最佳区域。", "仍保留自己的强触发 pBest 特征。", ["descriptionFinal", "guardrails", "outputFinal", "failureHandling"], ["output", "failureHandling"]), particleState: "pBest" },
+            { ...chunkCandidate("pso-r3-workflow", 3, "particle-B-converged.skill.md", "粒子 B · 继续靠近 gBest", 86, "粒子 B 保留 workflow 优势，并补齐 guardrails/output。", "执行方向粒子接近最终最优。", ["descriptionPrecise", "guardrails", "workflowStructured", "outputFinal", "failureHandling"], ["guardrails", "output"]), particleState: "pBest" },
+            { ...chunkCandidate("pso-r3-gbest", 3, "pso-converged.skill.md", "粒子 C · 收敛 gBest", 88, "粒子 C 作为当前 gBest，补充 examples 维度稳定触发边界。", "最终版本是全局最佳完整 skill.md，不是单个 chunk。", ["descriptionFinal", "guardrails", "workflowStructured", "outputFinal", "failureHandling", "examples"], ["description", "output", "examples"], true), particleState: "gBest" },
+          ],
+          edges: [],
+          transitions: [
+            [1, "pso-origin", "pso-r1-description", "初始化: description"],
+            [1, "pso-origin", "pso-r1-workflow", "初始化: workflow/output"],
+            [1, "pso-origin", "pso-r1-stability", "初始化: guardrails"],
+            [2, "pso-r1-description", "pso-r2-description", "移动: +guardrails"],
+            [2, "pso-r1-workflow", "pso-r2-workflow", "移动: +description"],
+            [2, "pso-r1-stability", "pso-r2-stability", "移动: +workflow/output"],
+            [3, "pso-r2-description", "pso-r3-description", "收敛: 回调 output"],
+            [3, "pso-r2-workflow", "pso-r3-workflow", "收敛: 补 guardrails"],
+            [3, "pso-r2-stability", "pso-r3-gbest", "收敛: +examples"],
+          ],
+        },
+        aco: {
+          width: 900,
+          height: 980,
+          positions: {
+            "aco-origin": [180, 690],
+            "aco-description": [450, 500],
+            "aco-guardrails": [700, 700],
+            "aco-output": [980, 500],
+            "aco-final": [1260, 650],
+          },
+          nodes: [
+            chunkCandidate("aco-origin", 0, "origin.skill.md", "路径起点", 61, "蚁群从原始文本出发，探索不同编辑路径。", "起点文件。", ["descriptionOriginal", "instructionOriginal"], [], true),
+            chunkCandidate("aco-description", 1, "path-description.skill.md", "路径：改 description", 72, "改 description 路径留下第一层信息素。", "触发相关 case 有收益，但误触发还需要边界。", ["descriptionPrecise", "instructionOriginal"], ["description"], true),
+            chunkCandidate("aco-guardrails", 1, "path-guardrails.skill.md", "路径：加 guardrails", 75, "negative examples 路径信息素增强。", "这条路径降低背景式会议提及误触发。", ["descriptionPrecise", "guardrails", "instructionOriginal"], ["guardrails"]),
+            chunkCandidate("aco-output", 2, "path-output-schema.skill.md", "路径：补 output", 83, "执行评测显示 output schema 路径收益高。", "路径从触发边界转向输出结构。", ["descriptionPrecise", "guardrails", "workflowStructured", "outputDetailed"], ["workflow", "output"], true),
+            chunkCandidate("aco-final", 3, "pheromone-main-path.skill.md", "主信息素路径", 89, "最终主路径为 description -> guardrails -> output -> missing information。", "过程可解释，用户能看到哪类编辑动作被强化。", ["descriptionFinal", "guardrails", "workflowStructured", "outputFinal", "failureHandling"], ["description", "output", "failureHandling"], true),
+          ],
+          edges: [
+            [1, "aco-origin", "aco-description", "mutation", "信息素 +description"],
+            [1, "aco-description", "aco-guardrails", "cross", "误触发下降: +guardrails"],
+            [2, "aco-guardrails", "aco-output", "cross", "执行收益: +workflow/output"],
+            [3, "aco-output", "aco-final", "keep", "主路径强化"],
+            [3, "aco-guardrails", "aco-final", "mutation", "补 missing information"],
+          ],
+        },
+        bee: {
+          width: 900,
+          height: 1000,
+          positions: {
+            "bee-origin": [180, 650],
+            "bee-scout-trigger": [520, 380],
+            "bee-scout-workflow": [520, 640],
+            "bee-scout-output": [520, 880],
+            "bee-employed": [900, 650],
+            "bee-final": [1260, 430],
+          },
+          nodes: [
+            chunkCandidate("bee-origin", 0, "origin.skill.md", "初始花源", 61, "蜂群把原始 skill 看成贫瘠花源。", "需要侦察不同文本风格。", ["descriptionOriginal", "instructionOriginal"], [], true),
+            chunkCandidate("bee-scout-trigger", 1, "scout-trigger-style.skill.md", "侦察蜂：强触发", 74, "侦察强触发写法。", "探索 description 的收益。", ["descriptionPrecise", "instructionOriginal", "examples"], ["description", "examples"]),
+            chunkCandidate("bee-scout-workflow", 1, "scout-workflow-style.skill.md", "侦察蜂：强流程", 76, "侦察强流程写法。", "强流程花源整体收益更均衡。", ["descriptionOriginal", "workflowStructured", "outputBasic"], ["workflow", "output"], true),
+            chunkCandidate("bee-scout-output", 1, "scout-output-style.skill.md", "侦察蜂：强输出", 72, "侦察强输出格式。", "输出更清楚，但触发边界不足。", ["descriptionOriginal", "instructionOriginal", "outputDetailed"], ["output"]),
+            chunkCandidate("bee-employed", 2, "employed-workflow-source.skill.md", "雇佣蜂开发", 85, "围绕强流程花源做局部开发。", "补上 guardrails 和 failure handling。", ["descriptionPrecise", "guardrails", "workflowStructured", "outputFinal", "failureHandling"], ["description", "guardrails", "output", "failureHandling"], true),
+            chunkCandidate("bee-final", 3, "observer-selected.skill.md", "观察蜂选择", 91, "观察蜂确认强流程花源收益最高，继续补 examples。", "最终版本均衡且泛化更好。", ["descriptionFinal", "guardrails", "workflowStructured", "outputFinal", "failureHandling", "examples"], ["description", "examples"], true),
+          ],
+          edges: [
+            [1, "bee-origin", "bee-scout-trigger", "mutation", "侦察: description/examples"],
+            [1, "bee-origin", "bee-scout-workflow", "mutation", "侦察: workflow/output"],
+            [1, "bee-origin", "bee-scout-output", "mutation", "侦察: output"],
+            [2, "bee-scout-workflow", "bee-employed", "cross", "雇佣蜂深挖强流程"],
+            [2, "bee-scout-trigger", "bee-employed", "keep", "吸收 description"],
+            [3, "bee-employed", "bee-final", "keep", "观察蜂选择高收益花源"],
+            [3, "bee-scout-trigger", "bee-final", "mutation", "补 examples"],
+          ],
+        },
+        immune: {
+          width: 900,
+          height: 1000,
+          positions: {
+            "immune-origin": [180, 640],
+            "immune-trigger": [500, 420],
+            "immune-output": [860, 650],
+            "immune-missing": [900, 840],
+            "immune-final": [1260, 500],
+          },
+          nodes: [
+            chunkCandidate("immune-origin", 0, "origin.skill.md", "未免疫个体", 61, "原始文本会被失败 case 攻击。", "缺少对误触发、漏字段和编造信息的防御。", ["descriptionOriginal", "instructionOriginal"], [], true),
+            chunkCandidate("immune-trigger", 1, "clone-fix-trigger.skill.md", "克隆体：修误触发", 76, "抗原：用户只是说昨天开会。", "克隆体加入 guardrails 阻断误触发。", ["descriptionPrecise", "guardrails", "instructionOriginal"], ["description", "guardrails"], true),
+            chunkCandidate("immune-output", 2, "clone-fix-fields.skill.md", "克隆体：修漏字段", 86, "抗原：action item 没有 owner。", "克隆体加入 workflow 和 output 字段。", ["descriptionPrecise", "guardrails", "workflowStructured", "outputDetailed"], ["workflow", "output"], true),
+            chunkCandidate("immune-missing", 2, "clone-fix-missing.skill.md", "克隆体：修编造", 84, "抗原：transcript 没有 deadline。", "克隆体加入 failure handling。", ["descriptionPrecise", "guardrails", "instructionOriginal", "failureHandling"], ["failureHandling"]),
+            chunkCandidate("immune-final", 3, "clone-selected.skill.md", "通过选择的克隆体", 92, "通过三个失败 case 后保留。", "最终版本围绕失败样本形成强鲁棒性。", ["descriptionFinal", "guardrails", "workflowStructured", "outputFinal", "failureHandling"], ["description", "output"], true),
+          ],
+          edges: [
+            [1, "immune-origin", "immune-trigger", "mutation", "抗原: 误触发 -> guardrails"],
+            [2, "immune-trigger", "immune-output", "cross", "抗原: 漏字段 -> output"],
+            [2, "immune-trigger", "immune-missing", "mutation", "抗原: 编造 -> failure"],
+            [3, "immune-output", "immune-final", "keep", "通过字段 case"],
+            [3, "immune-missing", "immune-final", "keep", "通过缺失信息 case"],
+          ],
+        },
+        annealing: {
+          width: 900,
+          height: 980,
+          positions: {
+            "annealing-origin": [180, 690],
+            "annealing-high": [500, 450],
+            "annealing-medium": [850, 620],
+            "annealing-low": [1150, 450],
+            "annealing-final": [1260, 730],
+          },
+          nodes: [
+            chunkCandidate("annealing-origin", 0, "origin.skill.md", "高温起点", 61, "温度最高，允许跳出原始短文本。", "局部修补收益有限。", ["descriptionOriginal", "instructionOriginal"], [], true),
+            chunkCandidate("annealing-high", 1, "high-temperature-rewrite.skill.md", "高温大改", 69, "接受大幅重构，即使短期分数不最高。", "一次性替换 description 和 workflow 骨架。", ["descriptionPrecise", "workflowBasic", "outputBasic"], ["description", "workflow", "output"], true),
+            chunkCandidate("annealing-medium", 2, "medium-temperature-local.skill.md", "中温局部增强", 83, "温度下降后，不再推翻结构，只补边界和字段。", "局部加入 guardrails、outputDetailed。", ["descriptionPrecise", "guardrails", "workflowStructured", "outputDetailed"], ["guardrails", "workflow", "output"], true),
+            chunkCandidate("annealing-low", 3, "low-temperature-refine.skill.md", "低温精修", 87, "低温阶段只做稳定性小改。", "加入 failure handling，不再大面积重排。", ["descriptionPrecise", "guardrails", "workflowStructured", "outputFinal", "failureHandling"], ["output", "failureHandling"]),
+            chunkCandidate("annealing-final", 3, "annealing-stable.skill.md", "稳定收敛", 89, "最终只保留低温后收益稳定的文本。", "早期大改、后期微调的轨迹非常清楚。", ["descriptionFinal", "guardrails", "workflowStructured", "outputFinal", "failureHandling"], ["description"], true),
+          ],
+          edges: [
+            [1, "annealing-origin", "annealing-high", "mutation", "高温: 重写 description/workflow/output"],
+            [2, "annealing-high", "annealing-medium", "cross", "中温: 补 guardrails/output 字段"],
+            [3, "annealing-medium", "annealing-low", "mutation", "低温: 加 failure handling"],
+            [3, "annealing-low", "annealing-final", "keep", "接受稳定版本"],
+          ],
+        },
+      };
+      if (currentLanguage === "en") translateObject(evolutionMaps);
+
+      function genericCandidates(roundIndex) {
+        const map = evolutionMaps[currentAlgorithm.id];
+        if (currentAlgorithm.id === "pso") {
+          return map.nodes.filter((node) => node.roundIndex === roundIndex);
+        }
+        return map.nodes.filter((node) => node.roundIndex <= roundIndex);
+      }
+
+      function getRoundCandidates(roundIndex = currentRound) {
+        if (currentAlgorithm.id === "genetic") return geneticCandidates(roundIndex);
+        return genericCandidates(roundIndex);
+      }
+
+      function getGeneticTreeCandidates(maxRound = currentRound) {
+        const candidates = [];
+        for (let index = 0; index <= maxRound; index += 1) {
+          candidates.push(...geneticCandidates(index).map((candidate) => ({ ...candidate, roundIndex: index })));
+        }
+        return candidates;
+      }
+
+      function getSelectedCandidate() {
+        const candidates = currentAlgorithm.id === "genetic" ? getGeneticTreeCandidates() : getRoundCandidates();
+        const selected = candidates.find((candidate) => candidate.id === selectedCandidateId);
+        const currentRoundChosen = candidates.find(
+          (candidate) => candidate.roundIndex === currentRound && candidate.chosen,
+        );
+        return selected || currentRoundChosen || candidates.find((candidate) => candidate.chosen) || candidates[0];
+      }
+
+      function getAllCurrentAlgorithmCandidates() {
+        if (currentAlgorithm.id === "genetic") {
+          return getGeneticTreeCandidates(currentAlgorithm.rounds.length - 1);
+        }
+        return evolutionMaps[currentAlgorithm.id]?.nodes || [];
+      }
+
+      function getDiffOptions() {
+        return [
+          { id: "origin", name: "original/SKILL.md", text: originalSkill },
+          ...getAllCurrentAlgorithmCandidates().map((candidate) => ({
+            id: candidate.id,
+            name: candidate.name,
+            text: candidate.text,
+          })),
+        ];
+      }
+
+      function renderDiffSelect(candidate) {
+        const options = getDiffOptions();
+        if (!options.some((option) => option.id === diffBaseId)) diffBaseId = "origin";
+        const select = byId("diffBaseSelect");
+        select.innerHTML = options
+          .map(
+            (option) => `
+              <option value="${option.id}" ${option.id === diffBaseId ? "selected" : ""}>
+                ${t("compareWith")} ${option.name}${option.id === candidate.id ? ` (${t("currentOption")})` : ""}
+              </option>
+            `,
+          )
+          .join("");
+        return options.find((option) => option.id === diffBaseId) || options[0];
+      }
+
+      function localizeStaticText() {
+        document.documentElement.lang = currentLanguage === "zh" ? "zh-CN" : "en";
+        document.querySelectorAll("[data-i18n]").forEach((element) => {
+          const key = element.dataset.i18n;
+          if (key) element.textContent = t(key);
+        });
+        document.querySelectorAll("[data-language-option]").forEach((button) => {
+          button.classList.toggle("active", button.dataset.languageOption === currentLanguage);
+        });
+        byId("closeDetailButton").title = t("closeFileViewer");
+        byId("closeDetailButton").setAttribute("aria-label", t("closeFileViewer"));
+        byId("closeUseCasesButton").title = t("closeUseCases");
+        byId("closeUseCasesButton").setAttribute("aria-label", t("closeUseCases"));
+      }
+
+      function renderAlgorithms() {
+        byId("algorithmList").innerHTML = algorithms
+          .map(
+            (algorithm) => `
+              <button class="algorithm-button ${algorithm.id === currentAlgorithm.id ? "active" : ""}" data-algorithm="${algorithm.id}">
+                <strong>${algorithm.name}</strong>
+                <span>${algorithm.short}</span>
+              </button>
+            `,
+          )
+          .join("");
+      }
+
+      function renderRoundTabs() {
+        byId("roundTabs").innerHTML = currentAlgorithm.rounds
+          .map(
+            (round, index) => `
+              <button class="round-tab ${index === currentRound ? "active" : ""}" data-round="${index}">
+                ${round.label}
+              </button>
+            `,
+          )
+          .join("");
+      }
+
+      function renderMetrics(score) {
+        byId("scoreTotal").textContent = score.total;
+        [
+          ["Trigger", score.trigger],
+          ["Execution", score.execution],
+          ["Stability", score.stability],
+        ].forEach(([name, value]) => {
+          byId(`metric${name}Text`).textContent = value;
+          byId(`metric${name}`).style.width = `${value}%`;
+        });
+      }
+
+      function renderGenetic(roundIndex) {
+        const candidates = getGeneticTreeCandidates(roundIndex);
+        const selected = getSelectedCandidate();
+        const positions = Object.fromEntries(
+          Object.entries(geneticBasePositions).map(([id, position]) => {
+            const offset = clampGeneticOffset(id, getNodeOffset(id));
+            setNodeOffset(id, offset);
+            return [id, [position[0] + offset.x, position[1] + offset.y]];
+          }),
+        );
+        const edges = [
+          [1, "genetic-r0-origin", "genetic-r1-trigger", "mutation", "变异 chunk: description", -42, -4],
+          [1, "genetic-r0-origin", "genetic-r1-workflow", "mutation", "新增 chunk: workflow", 0, -14],
+          [1, "genetic-r0-origin", "genetic-r1-output", "mutation", "新增 chunk: output", 42, -4],
+          [2, "genetic-r1-trigger", "genetic-r2-cross-a-b", "cross", "A.description -> AB", -56, -54],
+          [2, "genetic-r1-workflow", "genetic-r2-cross-a-b", "cross", "B.workflow -> AB", -60, 50],
+          [2, "genetic-r1-trigger", "genetic-r2-cross-a-b-c", "cross", "A.description -> ABC", 6, -90],
+          [2, "genetic-r1-workflow", "genetic-r2-cross-a-b-c", "cross", "B.workflow -> ABC", 4, -4],
+          [2, "genetic-r1-output", "genetic-r2-cross-a-b-c", "cross", "C.output -> ABC；字段变异", 70, 22],
+          [2, "genetic-r1-trigger", "genetic-r2-mutation", "mutation", "A.description + instruction -> mutation；output 变异", 92, 86],
+          [3, "genetic-r2-cross-a-b-c", "genetic-r3-final", "keep", "ABC chunks -> final", -62, -8],
+          [3, "genetic-r2-cross-a-b-c", "genetic-r3-final", "mutation", "新增 guardrails/failure -> final", -4, 78],
+          [3, "genetic-r2-cross-a-b-c", "genetic-r3-lean", "mutation", "output/failure 变异 -> lean", 136, 58],
+        ].filter(([visibleRound]) => visibleRound <= roundIndex);
+        const stageSize = getGeneticStageSize();
+        const stageW = stageSize.width;
+        const stageH = stageSize.height;
+        const lineFor = ([, from, to, type]) => {
+          const geometry = edgeGeometry(positions, from, to);
+          return `
+            <path class="pedigree-line ${type}" data-from="${from}" data-to="${to}" d="${geometry.d}" />
+          `;
+        };
+        const labelFor = ([, from, to, type, label, dx = 0, dy = 0]) => {
+          const geometry = edgeGeometry(positions, from, to, dx, dy);
+          return `<span class="operation-label ${type}" style="--x:${geometry.label.x.toFixed(2)}px; --y:${geometry.label.y.toFixed(2)}px" data-edge="${type}" data-from="${from}" data-to="${to}" data-dx="${dx}" data-dy="${dy}">${translateText(label)}</span>`;
+        };
+        const renderNode = (candidate) => `
+          <button class="tree-node map-node ${candidate.id === selected.id ? "selected" : ""}" data-candidate="${candidate.id}" style="--x:${positions[candidate.id][0]}px; --y:${positions[candidate.id][1]}px; --graph-node-w:${graphNodeSize.width}px; --graph-node-h:${graphNodeSize.height}px">
+            <span class="node-score">${candidate.score}<span>${t("points")}</span></span>
+            <strong>${candidate.name}</strong>
+            ${(candidate.chunks || candidate.genes || ["description"])
+              .map((chunk) => `<span class="gene ${chunk} ${(candidate.changedChunks || []).includes(chunk) ? "active" : ""}">${chunkLabels[chunk] || chunk}</span>`)
+              .join("")}
+            <small>${translateText(candidate.role)}</small>
+          </button>
+        `;
+        return `
+          <div class="genetic-pedigree" style="--stage-w:${stageW}px; --stage-h:${stageH}px">
+            <svg class="pedigree-lines" viewBox="0 0 ${stageW} ${stageH}" aria-hidden="true">
+              <defs>
+                <marker id="arrow-keep" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                  <path d="M 0 0 L 7 3.5 L 0 7 z" fill="#28715f"></path>
+                </marker>
+                <marker id="arrow-cross" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                  <path d="M 0 0 L 7 3.5 L 0 7 z" fill="#b7791f"></path>
+                </marker>
+                <marker id="arrow-mutation" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                  <path d="M 0 0 L 7 3.5 L 0 7 z" fill="#8a3f2c"></path>
+                </marker>
+                <marker id="arrow-direction" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#3b82f6"></path>
+                </marker>
+              </defs>
+              ${edges.map(lineFor).join("")}
+            </svg>
+            ${edges.map(labelFor).join("")}
+            ${[0, 1, 2, 3]
+              .filter((index) => index <= roundIndex)
+              .map((index) => `<div class="map-round" style="--y:${positions[`genetic-r${index}-${index === 0 ? "origin" : index === 1 ? "trigger" : index === 2 ? "cross-a-b" : "final"}`]?.[1] || 28}px">${currentLanguage === "zh" ? `第 ${index} 轮` : `Round ${index}`}</div>`)
+              .join("")}
+            ${candidates.map(renderNode).join("")}
+          </div>`;
+      }
+
+      function psoParticleTagFor(candidate) {
+        if (candidate.particleState === "gBest") {
+          return `<span class="particle-tag global">${t("fullSkill")} · gBest</span>`;
+        }
+        if (candidate.particleState === "pBest") {
+          return `<span class="particle-tag best">${t("fullSkill")} · pBest</span>`;
+        }
+        return `<span class="particle-tag">${t("fullSkill")} · ${t("seed")}</span>`;
+      }
+
+      function renderEvolutionMap(algorithmId, roundIndex) {
+        const map = evolutionMaps[algorithmId];
+        const visibleNodes = map.nodes.filter((node) => node.roundIndex <= roundIndex);
+        const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
+        const selected = getSelectedCandidate();
+        const positions = Object.fromEntries(
+          Object.entries(map.positions).map(([id, position]) => {
+            const offset = clampEvolutionOffset(id, getNodeOffset(id));
+            setNodeOffset(id, offset);
+            return [id, [position[0] + offset.x, position[1] + offset.y]];
+          }),
+        );
+        const visibleEdges = map.edges.filter(
+          ([visibleRound, from, to]) => visibleRound <= roundIndex && visibleNodeIds.has(from) && visibleNodeIds.has(to),
+        );
+        const stageSize = getEvolutionStageSize(map);
+        const lineFor = ([, from, to, type]) => {
+          const geometry = edgeGeometry(positions, from, to);
+          return `<path class="pedigree-line ${type}" data-from="${from}" data-to="${to}" d="${geometry.d}" />`;
+        };
+        const labelFor = ([, from, to, type, label, dx = 0, dy = 0]) => {
+          const geometry = edgeGeometry(positions, from, to, dx, dy);
+          return `<span class="operation-label evolution-label ${type}" style="--x:${geometry.label.x.toFixed(2)}px; --y:${geometry.label.y.toFixed(2)}px" data-from="${from}" data-to="${to}" data-dx="${dx}" data-dy="${dy}">${translateText(label)}</span>`;
+        };
+        const particleTagFor = (candidate) => {
+          if (algorithmId !== "pso") return "";
+          return psoParticleTagFor(candidate);
+        };
+        const renderNode = (candidate) => `
+          <button class="tree-node evolution-node ${candidate.id === selected.id ? "selected" : ""}" data-candidate="${candidate.id}" style="--x:${positions[candidate.id][0]}px; --y:${positions[candidate.id][1]}px; --graph-node-w:${graphNodeSize.width}px; --graph-node-h:${graphNodeSize.height}px">
+            <span class="node-score">${candidate.score}<span>${t("points")}</span></span>
+            ${particleTagFor(candidate)}
+            <strong>${candidate.name}</strong>
+            ${(candidate.chunks || ["description"])
+              .map((chunk) => `<span class="gene ${chunk} ${(candidate.changedChunks || []).includes(chunk) ? "active" : ""}">${chunkLabels[chunk] || chunk}</span>`)
+              .join("")}
+            <small>${translateText(candidate.role)}</small>
+          </button>
+        `;
+        return `
+          <div class="evolution-map" style="--stage-w:${stageSize.width}px; --stage-h:${stageSize.height}px">
+            <svg class="pedigree-lines" viewBox="0 0 ${stageSize.width} ${stageSize.height}" aria-hidden="true">
+              <defs>
+                <marker id="arrow-keep" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                  <path d="M 0 0 L 7 3.5 L 0 7 z" fill="#28715f"></path>
+                </marker>
+                <marker id="arrow-cross" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                  <path d="M 0 0 L 7 3.5 L 0 7 z" fill="#b7791f"></path>
+                </marker>
+                <marker id="arrow-mutation" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                  <path d="M 0 0 L 7 3.5 L 0 7 z" fill="#8a3f2c"></path>
+                </marker>
+                <marker id="arrow-direction" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#3b82f6"></path>
+                </marker>
+              </defs>
+              ${visibleEdges.map(lineFor).join("")}
+            </svg>
+            ${visibleEdges.map(labelFor).join("")}
+            ${visibleNodes.map(renderNode).join("")}
+          </div>`;
+      }
+
+      function renderPsoSnapshot(roundIndex) {
+        const map = evolutionMaps.pso;
+        const currentNodes = map.nodes.filter((node) => node.roundIndex === roundIndex);
+        const previousNodes = roundIndex > 0 ? map.nodes.filter((node) => node.roundIndex === roundIndex - 1) : [];
+        const selected = getSelectedCandidate();
+        const positions = Object.fromEntries(
+          [...previousNodes, ...currentNodes].map((node) => [node.id, map.positions[node.id]]),
+        );
+        const stageSize = getEvolutionStageSize(map);
+        const visibleTransitions = (map.transitions || []).filter(
+          ([visibleRound, from, to]) => visibleRound === roundIndex && positions[from] && positions[to],
+        );
+        const transitionFor = ([, from, to]) => {
+          const geometry = edgeGeometry(positions, from, to);
+          return `<path class="pedigree-line direction" data-from="${from}" data-to="${to}" d="${geometry.d}" />`;
+        };
+        const transitionLabelFor = ([, from, to, label]) => {
+          const geometry = edgeGeometry(positions, from, to);
+          return `<span class="operation-label direction" style="--x:${geometry.label.x.toFixed(2)}px; --y:${geometry.label.y.toFixed(2)}px">${translateText(label)}</span>`;
+        };
+        const renderNode = (candidate, isGhost = false) => `
+          <button class="tree-node evolution-node ${isGhost ? "ghost-node" : ""} ${!isGhost && candidate.id === selected.id ? "selected" : ""}" ${isGhost ? "" : `data-candidate="${candidate.id}"`} style="--x:${positions[candidate.id][0]}px; --y:${positions[candidate.id][1]}px; --graph-node-w:${graphNodeSize.width}px; --graph-node-h:${graphNodeSize.height}px">
+            <span class="node-score">${candidate.score}<span>${t("points")}</span></span>
+            ${psoParticleTagFor(candidate)}
+            <strong>${candidate.name}</strong>
+            ${(candidate.chunks || ["description"])
+              .map((chunk) => `<span class="gene ${chunk} ${(candidate.changedChunks || []).includes(chunk) ? "active" : ""}">${chunkLabels[chunk] || chunk}</span>`)
+              .join("")}
+            <small>${translateText(candidate.role)}</small>
+          </button>
+        `;
+        return `
+          <div class="evolution-map" style="--stage-w:${stageSize.width}px; --stage-h:${stageSize.height}px">
+            <svg class="pedigree-lines" viewBox="0 0 ${stageSize.width} ${stageSize.height}" aria-hidden="true">
+              <defs>
+                <marker id="arrow-direction" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#3b82f6"></path>
+                </marker>
+              </defs>
+              ${visibleTransitions.map(transitionFor).join("")}
+            </svg>
+            ${visibleTransitions.map(transitionLabelFor).join("")}
+            ${previousNodes.map((node) => renderNode(node, true)).join("")}
+            ${currentNodes.map((node) => renderNode(node)).join("")}
+          </div>`;
+      }
+
+      function renderPso(roundIndex) {
+        return renderPsoSnapshot(roundIndex);
+      }
+
+      function renderAco(roundIndex) {
+        return renderEvolutionMap("aco", roundIndex);
+      }
+
+      function renderBee(roundIndex) {
+        return renderEvolutionMap("bee", roundIndex);
+      }
+
+      function renderImmune(roundIndex) {
+        return renderEvolutionMap("immune", roundIndex);
+      }
+
+      function renderAnnealing(roundIndex) {
+        return renderEvolutionMap("annealing", roundIndex);
+      }
+
+      function renderAnimation() {
+        const renderers = {
+          genetic: renderGenetic,
+          pso: renderPso,
+          aco: renderAco,
+          bee: renderBee,
+          immune: renderImmune,
+          annealing: renderAnnealing,
+        };
+        byId("animationCanvas").innerHTML = renderers[currentAlgorithm.id](currentRound);
+        byId("legend").innerHTML = "";
+      }
+
+      function getRenderedPositions() {
+        const basePositions =
+          currentAlgorithm.id === "genetic"
+            ? geneticBasePositions
+            : evolutionMaps[currentAlgorithm.id]?.positions || {};
+        return Object.fromEntries(
+          Object.entries(basePositions).map(([id, position]) => {
+            const offset =
+              currentAlgorithm.id === "genetic"
+                ? clampGeneticOffset(id, getNodeOffset(id))
+                : clampEvolutionOffset(id, getNodeOffset(id));
+            return [id, [position[0] + offset.x, position[1] + offset.y]];
+          }),
+        );
+      }
+
+      function updateRenderedEdges() {
+        const positions = getRenderedPositions();
+        byId("animationCanvas").querySelectorAll(".pedigree-line[data-from][data-to]").forEach((line) => {
+          const geometry = edgeGeometry(positions, line.dataset.from, line.dataset.to);
+          line.setAttribute("d", geometry.d);
+        });
+        byId("animationCanvas").querySelectorAll(".operation-label[data-from][data-to]").forEach((label) => {
+          const dx = Number(label.dataset.dx || 0);
+          const dy = Number(label.dataset.dy || 0);
+          const geometry = edgeGeometry(positions, label.dataset.from, label.dataset.to, dx, dy);
+          label.style.setProperty("--x", `${geometry.label.x.toFixed(2)}px`);
+          label.style.setProperty("--y", `${geometry.label.y.toFixed(2)}px`);
+        });
+      }
+
+      function renderDetail() {
+        const candidate = getSelectedCandidate();
+        byId("candidateName").textContent = candidate.name;
+        byId("candidateSource").textContent = translateText(candidate.source);
+        byId("candidateScore").textContent = `${candidate.score} ${t("points")}`;
+        const chunks = candidate.chunks || candidate.genes || ["description"];
+        byId("candidateChunks").textContent = `${t("chunks")}: ${chunks.map((chunk) => chunkLabels[chunk] || chunk).join(" / ")}`;
+      }
+
+      function selectCandidate(candidateId) {
+        stopPlayback();
+        selectedCandidateId = candidateId;
+        detailOpen = true;
+        render();
+      }
+
+      function renderDetailPanelState() {
+        document.body.classList.toggle("detail-closed", !detailOpen);
+      }
+
+      function renderCompareTable() {
+        byId("compareBody").innerHTML = algorithms
+          .map((algorithm) => {
+            const lastRound = algorithm.rounds[algorithm.rounds.length - 1];
+            return `
+              <tr>
+                <td>${algorithm.name}</td>
+                <td><strong>${lastRound.score.total}</strong></td>
+                <td>${algorithm.finalFeature}</td>
+                <td>${algorithm.bestFor}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderUseCases() {
+        byId("useCaseGrid").innerHTML = algorithms
+          .map(
+            (algorithm) => `
+              <article class="use-case-card">
+                <strong>${algorithm.name}</strong>
+                <span><b>${t("scenario")}:</b> ${algorithm.bestFor}</span>
+                <span><b>${t("editPattern")}:</b> ${algorithm.finalFeature}</span>
+                <span><b>${t("mode")}:</b> ${algorithm.mode}</span>
+              </article>
+            `,
+          )
+          .join("");
+      }
+
+      function render() {
+        const round = currentAlgorithm.rounds[currentRound];
+        const candidate = getSelectedCandidate();
+        renderAlgorithms();
+        renderRoundTabs();
+        renderMetrics(round.score);
+        renderAnimation();
+        renderDetail();
+        renderDetailPanelState();
+        byId("statusRound").textContent = currentLanguage === "zh" ? `第 ${currentRound} 轮` : `Round ${currentRound}`;
+        byId("statusAlgorithm").textContent = currentAlgorithm.name;
+        byId("stageTitle").textContent = currentAlgorithm.title;
+        byId("stageSubtitle").textContent = currentAlgorithm.subtitle;
+        byId("currentVersion").textContent = candidate.name;
+        byId("skillText").textContent = candidate.text;
+        const diffBase = renderDiffSelect(candidate);
+        byId("diffView").innerHTML = createDiff(diffBase.text, candidate.text, diffBase.name, candidate.name);
+      }
+
+      function stopPlayback() {
+        if (playTimer) {
+          clearTimeout(playTimer);
+          playTimer = null;
+        }
+      }
+
+      byId("algorithmList").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-algorithm]");
+        if (!button) return;
+        stopPlayback();
+        currentAlgorithm = algorithms.find((item) => item.id === button.dataset.algorithm);
+        currentRound = 0;
+        selectedCandidateId = null;
+        render();
+      });
+
+      byId("roundTabs").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-round]");
+        if (!button) return;
+        stopPlayback();
+        currentRound = Number(button.dataset.round);
+        selectedCandidateId = null;
+        render();
+      });
+
+      const animationCanvas = byId("animationCanvas");
+
+      animationCanvas.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        const candidateNode = event.target.closest("[data-candidate]");
+        if (candidateNode && animationCanvas.contains(candidateNode)) {
+          if (currentAlgorithm.id === "pso") return;
+          const candidateId = candidateNode.dataset.candidate;
+          const offset = getNodeOffset(candidateId);
+          nodeDragState = {
+            pointerId: event.pointerId,
+            candidateId,
+            node: candidateNode,
+            startX: event.clientX,
+            startY: event.clientY,
+            startOffsetX: offset.x,
+            startOffsetY: offset.y,
+            dragging: false,
+          };
+          animationCanvas.setPointerCapture?.(event.pointerId);
+          return;
+        }
+        canvasDragState = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          startScrollLeft: animationCanvas.scrollLeft,
+          startScrollTop: animationCanvas.scrollTop,
+          dragging: false,
+        };
+        animationCanvas.setPointerCapture?.(event.pointerId);
+      });
+
+      animationCanvas.addEventListener("pointermove", (event) => {
+        if (nodeDragState && event.pointerId === nodeDragState.pointerId) {
+          const dx = event.clientX - nodeDragState.startX;
+          const dy = event.clientY - nodeDragState.startY;
+        if (!nodeDragState.dragging && Math.hypot(dx, dy) > dragThreshold) {
+          nodeDragState.dragging = true;
+          nodeDragState.node.classList.add("node-dragging");
+        }
+          if (!nodeDragState.dragging) return;
+          let offset = {
+            x: nodeDragState.startOffsetX + dx,
+            y: nodeDragState.startOffsetY + dy,
+          };
+          if (currentAlgorithm.id === "genetic") {
+            offset = clampGeneticOffset(nodeDragState.candidateId, offset);
+          } else if (evolutionMaps[currentAlgorithm.id]) {
+            offset = clampEvolutionOffset(nodeDragState.candidateId, offset);
+          }
+          setNodeOffset(nodeDragState.candidateId, offset);
+          nodeDragState.node.style.setProperty("--drag-x", `${offset.x - nodeDragState.startOffsetX}px`);
+          nodeDragState.node.style.setProperty("--drag-y", `${offset.y - nodeDragState.startOffsetY}px`);
+          updateRenderedEdges();
+          return;
+        }
+        if (!canvasDragState || event.pointerId !== canvasDragState.pointerId) return;
+        const dx = event.clientX - canvasDragState.startX;
+        const dy = event.clientY - canvasDragState.startY;
+        if (!canvasDragState.dragging && Math.hypot(dx, dy) > dragThreshold) {
+          canvasDragState.dragging = true;
+          animationCanvas.classList.add("dragging");
+        }
+        if (!canvasDragState.dragging) return;
+        animationCanvas.scrollLeft = canvasDragState.startScrollLeft - dx;
+        animationCanvas.scrollTop = canvasDragState.startScrollTop - dy;
+      });
+
+      function finishNodeDrag(event) {
+        if (!nodeDragState || event.pointerId !== nodeDragState.pointerId) return false;
+        const didDrag = nodeDragState.dragging;
+        const candidateId = nodeDragState.candidateId;
+        nodeDragState.node.classList.remove("node-dragging");
+        animationCanvas.releasePointerCapture?.(event.pointerId);
+        nodeDragState = null;
+        suppressCanvasClick = true;
+        if (didDrag) {
+          if (currentAlgorithm.id === "genetic" || evolutionMaps[currentAlgorithm.id]) renderAnimation();
+        } else {
+          selectCandidate(candidateId);
+        }
+        setTimeout(() => {
+          suppressCanvasClick = false;
+        }, 0);
+        return true;
+      }
+
+      function finishCanvasDrag(event) {
+        if (finishNodeDrag(event)) return;
+        if (!canvasDragState || event.pointerId !== canvasDragState.pointerId) return;
+        const didDrag = canvasDragState.dragging;
+        animationCanvas.releasePointerCapture?.(event.pointerId);
+        animationCanvas.classList.remove("dragging");
+        canvasDragState = null;
+        if (didDrag) {
+          suppressCanvasClick = true;
+          setTimeout(() => {
+            suppressCanvasClick = false;
+          }, 0);
+        }
+      }
+
+      animationCanvas.addEventListener("pointerup", finishCanvasDrag);
+      animationCanvas.addEventListener("pointercancel", finishCanvasDrag);
+
+      animationCanvas.addEventListener("click", (event) => {
+        if (suppressCanvasClick) {
+          suppressCanvasClick = false;
+          return;
+        }
+        const target = event.target.closest("[data-candidate]");
+        if (!target) return;
+        selectCandidate(target.dataset.candidate);
+      });
+
+      byId("diffBaseSelect").addEventListener("change", (event) => {
+        diffBaseId = event.target.value;
+        render();
+      });
+
+      byId("useCasesButton").addEventListener("click", () => {
+        document.body.classList.remove("use-cases-closed");
+      });
+
+      byId("closeUseCasesButton").addEventListener("click", () => {
+        document.body.classList.add("use-cases-closed");
+      });
+
+      byId("closeDetailButton").addEventListener("click", () => {
+        detailOpen = false;
+        renderDetailPanelState();
+      });
+
+      document.querySelectorAll("[data-language-option]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const nextLanguage = button.dataset.languageOption;
+          if (!nextLanguage || nextLanguage === currentLanguage) return;
+          const url = new URL(window.location.href);
+          if (nextLanguage === "en") {
+            url.searchParams.delete("lang");
+          } else {
+            url.searchParams.set("lang", nextLanguage);
+          }
+          window.location.href = url.toString();
+        });
+      });
+
+      window.addEventListener("resize", () => {
+        render();
+      });
+
+      localizeStaticText();
+      renderCompareTable();
+      renderUseCases();
+      render();
+    </script>
+  </body>
+</html>
